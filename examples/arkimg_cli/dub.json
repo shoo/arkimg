@@ -1,0 +1,15 @@
+{
+	"name": "arkimg-cli",
+	"dependencies": {
+		"arkimg": {"path": "../..", "version": "*"}
+	},
+	"targetName": "arkimg",
+	"targetType": "executable",
+	"importPaths": ["."],
+	"sourcePaths": ["src"],
+	"targetPath": "build",
+	"buildTypes": {
+		"vscode-debug": { "buildOptions": ["debugMode", "debugInfoC", "unittests"] },
+		"vscode-debug-cov": { "buildOptions": ["debugMode", "coverage", "debugInfoC", "unittests"] }
+	}
+}

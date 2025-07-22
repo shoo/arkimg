@@ -1,0 +1,14 @@
+{
+	"name": "test_webp_encoding",
+	"dependencies": {
+		"arkimg": {"path": "../.."},
+		"libwebp": "~>0.4.0"
+	},
+	"targetType": "executable",
+	"sourcePaths": ["src"],
+	"importPaths": ["."],
+	"lflags-windows-x86_64": ["/LIBPATH:$PACKAGE_DIR/lib/windows-x86_64"],
+	"lflags-windows-x86":    ["/LIBPATH:$PACKAGE_DIR/lib/windows-x86"],
+	"preBuildCommands-windows-x86_64": ["rdmd -m64 scripts/prebuild.d"],
+	"preBuildCommands-windows-x86":    ["rdmd -m32 scripts/prebuild.d"]
+}
