@@ -4,6 +4,7 @@
 *.lib
 *.a
 *.so
+*.lst
 *.json
 *.png
 *.jpg

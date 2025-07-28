@@ -8,7 +8,7 @@ import std.getopt;
 int dispHelp(string exePath, string cmdName, GetoptResult result, string msg)
 {
 	import std.stdio, std.path, std.algorithm, std.range, std.conv;
-	if (result.options.length > 9)
+	if (result.options.length > 0)
 		writefln("%s %s <OPTIONS>\n\n%s\n<OPTIONS> of %s:", exePath.baseName, cmdName, msg, cmdName);
 	else
 		writefln("%s %s <OPTIONS>\n\n%s", exePath.baseName, cmdName, msg);

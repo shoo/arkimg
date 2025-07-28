@@ -1,3 +1,11 @@
+/*******************************************************************************
+ * BMP拡張
+ * 
+ * ビットマップ画像の基礎的な利用のためのAPIとArkBmpクラスを定義します。
+ * - `Bitmap`: ビットマップを取り扱うためのデータクラス。
+ * - `createBitmap`: Bitmap を適切に初期化します。
+ * - `ArkBmp`: ArkImgのBMP用クラス。
+ */
 module arkimg.bmp;
 
 import arkimg._internal.base;

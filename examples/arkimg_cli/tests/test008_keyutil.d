@@ -3,8 +3,10 @@ module tests.test008_keyutil;
 import std.process;
 import std.exception;
 import std.file, std.path;
-import std.string;
+import std.string, std.conv;
 import std.regex;
+import std.base64;
+import std.array, std.algorithm, std.range;
 
 void main()
 {
@@ -39,6 +41,25 @@ void main()
 	assert(result.compareStrings(i`
 		PublicKey:  $(pubkey2)
 		`));
+	
+	result = execArkimgCli(["keyutil", "--key", key, "--prvkey", prvkey, "--genpubkey", "--parameter", "-v"]);
+	if (auto m = result.matchFirst(regex(r"^PublicKey:  ([0-9A-F]{64})$", "m")))
+		pubkey2 = m.captures[1].dup;
+	assert(pubkey == pubkey2, result);
+	assert(result.compareStrings(i`
+		Parameter: $(key)-$(pubkey)
+		`));
+	
+	auto keybin    = cast(immutable(ubyte)[])key.chunks(2).map!(a => a.to!ubyte(16)).array;
+	auto pubkeybin = cast(immutable(ubyte)[])pubkey.chunks(2).map!(a => a.to!ubyte(16)).array;
+	result = execArkimgCli(["keyutil", "--key", key, "--prvkey", prvkey, "--genpubkey",
+		"--parameter", "--base64", "-v"]);
+	if (auto m = result.matchFirst(regex(r"^PublicKey:  ([0-9A-F]{64})$", "m")))
+		pubkey2 = m.captures[1].dup;
+	assert(pubkey == pubkey2, result);
+	assert(result.compareStrings(i`
+		Parameter: k16p32-$(Base64URLNoPadding.encode(keybin~pubkeybin))
+		`));
 }
 
 string uniqueName(string parent, string extension, string prefix = "")
@@ -62,10 +83,45 @@ bool compareStrings(ITxt...)(string a, ITxt txt)
 	immutable aLines = a.splitLines,
 		b = text(txt).chompPrefix("\n").outdent,
 		bLines = b.splitLines;
+	void dispDiff(in string[] lhs, in string[] rhs)
+	{
+		writeln("Compare is failed.");
+		writeln("--------------------------");
+		import std.algorithm: levenshteinDistanceAndPath, EditOp;
+		size_t lpos, rpos;
+		foreach (op; lhs.levenshteinDistanceAndPath(rhs)[1])
+		{
+			final switch (op)
+			{
+			case EditOp.none:
+				writefln("  %s", lhs[lpos++]);
+				rpos++;
+				break;
+			case EditOp.substitute:
+				writefln("- %s", lhs[lpos++]);
+				writefln("+ %s", rhs[rpos++]);
+				break;
+			case EditOp.insert:
+				writefln("+ %s", rhs[rpos++]);
+				break;
+			case EditOp.remove:
+				writefln("- %s", lhs[lpos++]);
+				break;
+			}
+		}
+		writeln("--------------------------");
+	}
+	if (aLines.length == bLines.length)
+	{
+		if (aLines == bLines)
+			return true;
+		dispDiff(aLines[], bLines[]);
+		return false;
+	}
 	if (!aLines[$-bLines.length - 1].startsWith("     Running")
 		|| !aLines.endsWith(bLines))
 	{
-		writeln("----------\n", a, "\n-----\n", b, "\n----------");
+		dispDiff(aLines[$-bLines.length..$], bLines[]);
 		return false;
 	}
 	return true;
@@ -92,13 +148,13 @@ auto execArkimgCliImpl(string[] args, string[string] env)
 string execArkimgCli(string[] args = null, string[string] env = null)
 {
 	auto result = execArkimgCliImpl(args, env);
-	enforce(result.status == 0);
+	enforce(result.status == 0, result.output);
 	return result.output;
 }
 
 string execArkimgCliFail(string[] args = null, string[string] env = null)
 {
 	auto result = execArkimgCliImpl(args, env);
-	enforce(result.status != 0);
+	enforce(result.status != 0, result.output);
 	return result.output;
 }

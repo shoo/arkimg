@@ -5,6 +5,7 @@ import std.base64;
 import std.stdio;
 import arkimg;
 import src.help;
+import src.misc;
 
 int keyutilCommand(string[] args)
 {
@@ -17,10 +18,13 @@ int keyutilCommand(string[] args)
 	bool genIV;
 	bool genPrvKey;
 	bool genPubKey;
-	string prvKey = environment.get("ARKIMG_CLI_KEY");
 	bool verbose;
 	bool base64;
 	bool parameter;
+	string commonKeyArg = environment.get("ARKIMG_CLI_KEY");
+	string ivArg        = environment.get("ARKIMG_CLI_IV");
+	string prvKeyArg    = environment.get("ARKIMG_CLI_PRIVATE_KEY");
+	string pubKeyArg    = environment.get("ARKIMG_CLI_PUBLIC_KEY");
 	try
 	{
 		auto getoptres = args.getopt(
@@ -31,21 +35,33 @@ int keyutilCommand(string[] args)
 			"keysize",
 				"Specify size of the common key in bit length. (default=128 or 192 or 256)",
 				&keySize,
+			"key",
+				"Specify common key for parameter output. Cannot be used together with --genkey/--keysize.\n"
+				~ "If not specified, the environment variable `ARKIMG_CLI_KEY` will be used.",
+				&commonKeyArg,
 			"geniv",
 				"Specify the IV for encryption in 16-byte hexadecimal format.\n"
 				~ "If not specified, a random 16-byte sequence will be prepended to the data.\n"
 				~ "It is recommended not to specify this for security reasons.",
 				&genIV,
+			"iv",
+				"Specify IV for parameter output. Cannot be used together with --geniv.\n"
+				~ "If not specified, the environment variable `ARKIMG_CLI_IV` will be used.",
+				&ivArg,
 			"genprvkey",
 				"Generate a private key for sign.",
 				&genPrvKey,
 			"prvkey",
 				"Specify the private key in 32 bytes hexadecimal format for generating the public key.\n"
-				~ "If not specified, the environment variable `ARKIMG_CLI_KEY` will be used.",
-				&prvKey,
+				~ "If not specified, the environment variable `ARKIMG_CLI_PRIVATE_KEY` will be used.",
+				&prvKeyArg,
 			"genpubkey",
-				"Generate a public key for verifing signature.",
+				"Generate a public key for verifying signature.",
 				&genPubKey,
+			"pubkey",
+				"Specify public key for parameter output. Cannot be used together with --genpubkey.\n"
+				~ "If not specified, the environment variable `ARKIMG_CLI_PUBLIC_KEY` will be used.",
+				&pubKeyArg,
 			"base64",
 				"Generate keys with Base64 format (Base64 URL NoPadding).",
 				&base64,
@@ -67,27 +83,35 @@ int keyutilCommand(string[] args)
 	// ログレベル設定
 	(cast()sharedLog).logLevel = cast(LogLevel)(verbose ? LogLevel.all : LogLevel.error | LogLevel.fatal);
 	// パラメータチェック
-	if (!genCommonKey && !genIV && !genPrvKey && !genPubKey)
+	if (!genCommonKey && !genIV && !genPrvKey && !genPubKey && !parameter)
 	{
 		return dispHelp(thisExePath.baseName.stripExtension, args[0], GetoptResult.init, "Key utilities.\n"
 			~ "Specify at least one of the following arguments:\n"
 			~ "    --genkey:    Generate common key for encryption/decryption.\n"
 			~ "    --geniv:     Generate IV.\n"
 			~ "    --genprvkey: Generate private key for signing.\n"
-			~ "    --genpubkey: Generate public key for verification.");
+			~ "    --genpubkey: Generate public key for verification.\n"
+			~ "    --parameter: Generate keys with parameter specs format.\n");
 	}
-	if (genPubKey && (!genPrvKey && prvKey.length == 0))
+	if (genPubKey && (!genPrvKey && prvKeyArg.length == 0))
 	{
 		return dispHelp(thisExePath.baseName.stripExtension, args[0], GetoptResult.init, "Key utilities.\n"
 			~ "To generate a public key, you need to either generate or specify a private key:\n"
 			~ "    --genprvkey: Generate private key for signing.\n"
 			~ "    --prvkey:    Specify the private key.");
 	}
-	if (genPrvKey && prvKey.length != 0)
+	if (genPrvKey && prvKeyArg.length != 0)
 	{
 		return dispHelp(thisExePath.baseName.stripExtension, args[0], GetoptResult.init, "Key utilities.\n"
 			~ "There is a conflict between generating and specifying the private key:\n"
 			~ "    --genprvkey: Generate private key for signing.\n"
+			~ "    --prvkey:    Specify the private key.");
+	}
+	if (!genPubKey && prvKeyArg.length != 0)
+	{
+		return dispHelp(thisExePath.baseName.stripExtension, args[0], GetoptResult.init, "Key utilities.\n"
+			~ "Specify the private key for generating the public key.:\n"
+			~ "    --genpubkey: Generate a public key for verifying signature.\n"
 			~ "    --prvkey:    Specify the private key.");
 	}
 	if (genPrvKey && (keySize != 128 && keySize != 192 && keySize != 256))
@@ -96,39 +120,31 @@ int keyutilCommand(string[] args)
 			~ "The size of the common key is incorrect:\n"
 			~ "    --keysize: 128 or 192 or 256");
 	}
-	if (parameter && !genCommonKey)
+	if (!parameter && (commonKeyArg.length > 0 || ivArg.length > 0))
+	{
+		return dispHelp(thisExePath.baseName.stripExtension, args[0], GetoptResult.init, "Key utilities.\n"
+			~ "The specified common key/IV must be specified together with the --parameter:\n"
+			~ "    --parameter: Generate keys with parameter specs format.");
+	}
+	if (!parameter && (pubKeyArg.length > 0))
+	{
+		return dispHelp(thisExePath.baseName.stripExtension, args[0], GetoptResult.init, "Key utilities.\n"
+			~ "The specified public key must be specified together with the --parameter:\n"
+			~ "    --parameter: Generate keys with parameter specs format.");
+	}
+	if (parameter && (!genCommonKey && commonKeyArg.length == 0))
 	{
 		return dispHelp(thisExePath.baseName.stripExtension, args[0], GetoptResult.init, "Key utilities.\n"
 			~ "A common key is required for parameters:\n"
+			~ "    --key:       Specify common key for parameter output.\n"
 			~ "    --genkey:    Generate common key for encryption/decryption.");
 	}
-	immutable(ubyte)[] prvKeyRaw;
-	if (prvKey.length == 0)
-	{
-		prvKeyRaw = null;
-	}
-	else if (prvKey.exists)
-	{
-		auto pem = std.file.readText(prvKey);
-		prvKeyRaw = pem.convertPrivateKeyToDER().convertPrivateKeyToRaw();
-	}
-	else if (prvKey.all!isHexDigit)
-	{
-		prvKeyRaw = prvKey.chunks(2).map!(a => a.to!ubyte(16)).array;
-	}
-	else if (prvKey.all!(a => a.isDigit || a.isAlpha || (a == '-' || a == '_')))
-	{
-		prvKeyRaw = Base64URLNoPadding.decode(prvKey);
-	}
-	else
-	{
-		prvKeyRaw = null;
-	}
-	
-	immutable(ubyte)[] generatedCommonKey  = null;
-	immutable(ubyte)[] generatedIV         = null;
-	immutable(ubyte)[] generatedPrivateKey = prvKeyRaw;
-	immutable(ubyte)[] generatedPublicKey  = null;
+	immutable(ubyte)[] generatedCommonKey  = loadCommonKey(commonKeyArg);
+	immutable(ubyte)[] generatedIV         = loadIV(ivArg);
+	immutable(ubyte)[] generatedPrivateKey = prvKeyArg.length == 0 ? null
+		: loadPrivateKey(prvKeyArg).convertPrivateKeyToRaw();
+	immutable(ubyte)[] generatedPublicKey  = pubKeyArg.length == 0 ? null
+		: loadPublicKey(pubKeyArg).convertPublicKeyToRaw();
 	
 	if (genCommonKey)
 		generatedCommonKey = createCommonKey(keySize / 8);

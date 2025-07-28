@@ -3,7 +3,8 @@ module examples.arkimg_cli.tests.test004_decrypt;
 import std.process;
 import std.exception;
 import std.file, std.path;
-import std.string;
+import std.string, std.conv;
+import std.base64, std.algorithm, std.range, std.array;
 
 enum key = "072114BC7EA8982948A274691A580E65F306B3C6E1B6807399DAF739882C515E";
 
@@ -33,6 +34,15 @@ void main()
 		[info] Save $(testOutFile)
 		`));
 	assert(rsSecretDir.buildPath("test.txt").readText() == testOutFile.readText());
+	
+	auto testOutFile2 = tempDir.uniqueName(".txt");
+	result = execArkimgCli(["decrypt", "-i", testFile, "-s", "test.txt", "-o", testOutFile2, "-d", "-p",
+		"k32-" ~ Base64URLNoPadding.encode(key.chunks(2).map!(a => a.to!ubyte(16)).array).idup, "-v"]);
+	assert(result.compareStrings(i`
+		[info] Load $(testFile)
+		[info] Found test.txt
+		[info] Save $(testOutFile2)
+		`));
 }
 
 string uniqueName(string parent, string extension, string prefix = "")
@@ -56,10 +66,45 @@ bool compareStrings(ITxt...)(string a, ITxt txt)
 	immutable aLines = a.splitLines,
 		b = text(txt).chompPrefix("\n").outdent,
 		bLines = b.splitLines;
+	void dispDiff(in string[] lhs, in string[] rhs)
+	{
+		writeln("Compare is failed.");
+		writeln("--------------------------");
+		import std.algorithm: levenshteinDistanceAndPath, EditOp;
+		size_t lpos, rpos;
+		foreach (op; lhs.levenshteinDistanceAndPath(rhs)[1])
+		{
+			final switch (op)
+			{
+			case EditOp.none:
+				writefln("  %s", lhs[lpos++]);
+				rpos++;
+				break;
+			case EditOp.substitute:
+				writefln("- %s", lhs[lpos++]);
+				writefln("+ %s", rhs[rpos++]);
+				break;
+			case EditOp.insert:
+				writefln("+ %s", rhs[rpos++]);
+				break;
+			case EditOp.remove:
+				writefln("- %s", lhs[lpos++]);
+				break;
+			}
+		}
+		writeln("--------------------------");
+	}
+	if (aLines.length == bLines.length)
+	{
+		if (aLines == bLines)
+			return true;
+		dispDiff(aLines[], bLines[]);
+		return false;
+	}
 	if (!aLines[$-bLines.length - 1].startsWith("     Running")
 		|| !aLines.endsWith(bLines))
 	{
-		writeln("----------\n", a, "\n-----\n", b, "\n----------");
+		dispDiff(aLines[$-bLines.length..$], bLines[]);
 		return false;
 	}
 	return true;
@@ -86,13 +131,13 @@ auto execArkimgCliImpl(string[] args, string[string] env)
 string execArkimgCli(string[] args = null, string[string] env = null)
 {
 	auto result = execArkimgCliImpl(args, env);
-	enforce(result.status == 0);
+	enforce(result.status == 0, result.output);
 	return result.output;
 }
 
 string execArkimgCliFail(string[] args = null, string[string] env = null)
 {
 	auto result = execArkimgCliImpl(args, env);
-	enforce(result.status != 0);
+	enforce(result.status != 0, result.output);
 	return result.output;
 }

@@ -5,7 +5,7 @@ private import crypto = arkimg._internal.crypto;
 
 
 /*******************************************************************************
- * ファイル名からMIMEタイプの取得
+ * ファイル名からMIMEタイプの取得 / Get MIME type from filename
  */
 string mimeType(string filename)
 {
@@ -149,7 +149,7 @@ string mimeType(string filename)
 
 
 /*******************************************************************************
- * 共通鍵生成
+ * 共通鍵生成 / Generation of AES common key
  */
 immutable(ubyte)[] createCommonKey(RandomGen = Random)(size_t keySize, RandomGen rng)
 {
@@ -162,7 +162,7 @@ immutable(ubyte)[] createCommonKey(size_t keySize = 32)
 }
 
 /*******************************************************************************
- * 初期ベクトル
+ * 初期ベクトル / Generation of AES IV
  * 
  * 参考:
  *      通常は自動で作成して暗号データ内に埋め込むため、使用しません。
@@ -182,7 +182,7 @@ immutable(ubyte)[] createRandomIV()
 }
 
 /*******************************************************************************
- * 秘密鍵作成
+ * 秘密鍵作成(DER形式) / Generation of Ed25519 private key (DER format)
  */
 immutable(ubyte)[] createPrivateKey()
 {
@@ -190,7 +190,7 @@ immutable(ubyte)[] createPrivateKey()
 }
 
 /*******************************************************************************
- * 公開鍵作成
+ * 公開鍵作成(DER形式) / Generation of Ed25519 public key (DER format)
  */
 immutable(ubyte)[] createPublicKey(in ubyte[] prvKey)
 {
@@ -198,7 +198,7 @@ immutable(ubyte)[] createPublicKey(in ubyte[] prvKey)
 }
 
 /*******************************************************************************
- * 鍵形式変換
+ * 鍵形式変換 / Convertion of Ed25519 public key format
  */
 string convertPrivateKeyToPEM(in ubyte[] prvKey)
 {
@@ -241,7 +241,7 @@ immutable(ubyte)[] convertPublicKeyToDER(immutable(ubyte)[] pubKey)
 }
 
 /*******************************************************************************
- * 画像のロード
+ * 画像のロード / Load any image to ArkImg
  */
 ArkImg loadImage(immutable(ubyte)[] binary, string mimeType = "image/png", in ubyte[] commonKey, in ubyte[] iv = null)
 {
@@ -272,7 +272,7 @@ ArkImg loadImage(string filename, in ubyte[] commonKey = null, in ubyte[] iv = n
 }
 
 /*******************************************************************************
- * 画像の保存
+ * 画像の保存 / Save ArkImg to image file
  */
 immutable(ubyte)[] saveImage(ArkImg img, string mimeType = "image/png", in ubyte[] commonKey, in ubyte[] iv = null)
 {
@@ -320,7 +320,7 @@ immutable(ubyte)[] saveImage(ArkImg img, string mimeType = "image/png", in ubyte
 }
 
 /*******************************************************************************
- * 
+ * メタデータのヘルパ構造体 / Metadata helper
  */
 struct Metadata
 {

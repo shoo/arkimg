@@ -1,5 +1,11 @@
+/*******************************************************************************
+ * PNG拡張
+ * 
+ * PNG画像のArkPngクラスを定義します。
+ * このクラスはlibpngに依存しており $(D baseImage) にBMP画像の読み書きをサポートしています。
+ * - `ArkPng`: ArkImgのPNG用クラス。
+ */
 module arkimg.png;
-
 
 import arkimg.bmp;
 import arkimg._internal.base;

@@ -20,6 +20,7 @@ int encryptCommand(string[] args)
 	string commonKeyArg = environment.get("ARKIMG_CLI_KEY");
 	string ivArg        = environment.get("ARKIMG_CLI_IV");
 	string prvKeyArg    = environment.get("ARKIMG_CLI_PRIVATE_KEY");
+	string parameterArg;
 	string comment;
 	string exDatArg;
 	bool force;
@@ -72,7 +73,7 @@ int encryptCommand(string[] args)
 				thisExePath.baseName.stripExtension, args[0],
 				environment.get("ARKIMG_CLI_KEY", createCommonKey.toHexString()),
 				environment.get("ARKIMG_CLI_PRIVATE_KEY", createPrivateKey.convertPrivateKeyToRaw().toHexString())));
-		}
+	}
 	catch (Exception e)
 		return dispFallbackHelp(thisExePath.baseName.stripExtension, args[0], GetoptResult.init,
 			"Encrypt and add file into arkimg.\n" ~ e.msg);
@@ -107,7 +108,7 @@ int encryptCommand(string[] args)
 	
 	// 鍵情報読み込み
 	auto commonKey = loadCommonKey(commonKeyArg);
-	auto iv = ivArg.length > 0 ? ivArg.chunks(2).map!(a => a.to!ubyte(16)).array : null;
+	auto iv        = loadIV(ivArg);
 	auto prvKeyDER = loadPublicKey(prvKeyArg);
 	if (prvKeyArg.length > 0 && prvKeyDER.length == 0)
 	{

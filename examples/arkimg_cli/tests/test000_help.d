@@ -61,6 +61,7 @@ void main()
 		
 		Archive files to arkimg.
 		ex) $(exeBaseName) a -i input.png -o output.png -s=secret.txt -k=$(key) --prvkey=$(prvkey)
+		<OPTIONS> of a:
 		 -i      --in | * Input image file name.
 		 -o     --out |   Output image file name including encrypted data.
 		                  If not specified, the input image will be overwritten.
@@ -88,22 +89,24 @@ void main()
 		
 		Extract and decrypt files from arkimg.
 		ex) $(exeBaseName) x -i input.png -o output.png -s=secret.txt -k=$(key) --pubkey=$(pubkey)
-		 -i      --in | * Input arkimg file name.
-		 -o     --out |   Output file name of secret data including arkimg.
-		                  If not specified, the file name of the meta information will be used.
-		                  And if there is no meta information, the default name will be used.
-		 -k     --key | * Specify the common key for encryption in 16/32-byte(AES128/256) hexadecimal format.
-		                  If not specified, the environment variable $("`ARKIMG_CLI_KEY`") will be used.
-		         --iv |   Specify the IV for encryption in 16-byte hexadecimal format.
-		                  If not specified, the environment variable $("`ARKIMG_CLI_IV`") will be used.
-		                  If neither is set, a random 16-byte sequence will be prepended to the data.
-		                  It is recommended not to specify this for security reasons.
-		     --pubkey |   Public key pem file for signing or 32-byte hexadecimal format.
-		                  If not specified, the environment variable $("`ARKIMG_CLI_PUBLIC_KEY`") will be used.
-		                  If neither is set, signing will not be performed.
-		 -f   --force |   Overwrite the output file if it already exists.
-		 -v --verbose |   Display verbose messages.
-		 -h    --help |   This help information.
+		<OPTIONS> of x:
+		 -i        --in | * Input arkimg file name.
+		 -o       --out |   Output file name of secret data including arkimg.
+		                    If not specified, the file name of the meta information will be used.
+		                    And if there is no meta information, the default name will be used.
+		 -k       --key |   Specify the common key for encryption in 16/32-byte(AES128/256) hexadecimal format.
+		                    If not specified, the environment variable $("`ARKIMG_CLI_KEY`") will be used.
+		           --iv |   Specify the IV for encryption in 16-byte hexadecimal format.
+		                    If not specified, the environment variable $("`ARKIMG_CLI_IV`") will be used.
+		                    If neither is set, a random 16-byte sequence will be prepended to the data.
+		                    It is recommended not to specify this for security reasons.
+		       --pubkey |   Public key pem file for signing or 32-byte hexadecimal format.
+		                    If not specified, the environment variable $("`ARKIMG_CLI_PUBLIC_KEY`") will be used.
+		                    If neither is set, signing will not be performed.
+		 -p --parameter |   Specify cryptographic information in parameter spec format instead of --key and --pubkey.
+		 -f     --force |   Overwrite the output file if it already exists.
+		 -v   --verbose |   Display verbose messages.
+		 -h      --help |   This help information.
 		`));
 	
 	// encrypt のヘルプ
@@ -137,27 +140,29 @@ void main()
 	// decrypt のヘルプ
 	result = execArkimgCli(["d", "-h"], env: env);
 	assert(result.compareStrings(i`
-			$(exeBaseName) d <OPTIONS>
-			
-			Decrypt files to arkimg.
-			ex) $(exeBaseName) d -i input.png -o output.png -s=secret.txt -k=$(key) --pubkey=$(pubkey)
-			 -i      --in | * Input arkimg file name.
-			 -o     --out |   Output file name of secret data including arkimg.
-			                  If not specified, the file name of the meta information will be used.
-			                  And if there is no meta information, the default name will be used.
-			 -s  --secret | * Secret data file name or index includeing arkimg.
-			 -k     --key | * Specify the common key for encryption in 16/32-byte(AES128/256) hexadecimal format.
-			                  If not specified, the environment variable $("`ARKIMG_CLI_KEY`") will be used.
-			         --iv |   Specify the IV for encryption in 16-byte hexadecimal format.
-			                  If not specified, the environment variable $("`ARKIMG_CLI_IV`") will be used.
-			                  If neither is set, a random 16-byte sequence will be prepended to the data.
-			                  It is recommended not to specify this for security reasons.
-			     --pubkey |   Public key pem file for signing or 32-byte hexadecimal format.
-			                  If not specified, the environment variable $("`ARKIMG_CLI_PUBLIC_KEY`") will be used.
-			                  If neither is set, signing will not be performed.
-			 -f   --force |   Overwrite the output file if it already exists.
-			 -v --verbose |   Display verbose messages.
-			 -h    --help |   This help information.
+		$(exeBaseName) d <OPTIONS>
+		
+		Decrypt files to arkimg.
+		ex) $(exeBaseName) d -i input.png -o output.png -s=secret.txt -k=$(key) --pubkey=$(pubkey)
+		<OPTIONS> of d:
+		 -i        --in | * Input arkimg file name.
+		 -o       --out |   Output file name of secret data including arkimg.
+		                    If not specified, the file name of the meta information will be used.
+		                    And if there is no meta information, the default name will be used.
+		 -s    --secret | * Secret data file name or index includeing arkimg.
+		 -k       --key |   Specify the common key for encryption in 16/32-byte(AES128/256) hexadecimal format.
+		                    If not specified, the environment variable $("`ARKIMG_CLI_KEY`") will be used.
+		           --iv |   Specify the IV for encryption in 16-byte hexadecimal format.
+		                    If not specified, the environment variable $("`ARKIMG_CLI_IV`") will be used.
+		                    If neither is set, a random 16-byte sequence will be prepended to the data.
+		                    It is recommended not to specify this for security reasons.
+		       --pubkey |   Public key pem file for signing or 32-byte hexadecimal format.
+		                    If not specified, the environment variable $("`ARKIMG_CLI_PUBLIC_KEY`") will be used.
+		                    If neither is set, signing will not be performed.
+		 -p --parameter |   Specify cryptographic information in parameter spec format instead of --key and --pubkey.
+		 -f     --force |   Overwrite the output file if it already exists.
+		 -v   --verbose |   Display verbose messages.
+		 -h      --help |   This help information.
 		`));
 	
 	// list のヘルプ
@@ -169,8 +174,8 @@ void main()
 		ex) $(exeBaseName) ls -i input.png -k=$(key) --pubkey=$(pubkey)
 		<OPTIONS> of ls:
 		 -i            --in | * Input image file name.
-		 -p          --path |   Directory path of the secret data for list base.
-		 -k           --key | * Specify the common key for encryption in 16/32-byte(AES128/256) hexadecimal format.
+		 -l      --location |   Location of directory path of the secret data for list base.
+		 -k           --key |   Specify the common key for encryption in 16/32-byte(AES128/256) hexadecimal format.
 		                        If not specified, the environment variable $("`ARKIMG_CLI_KEY`") will be used.
 		               --iv |   Specify the IV for encryption in 16-byte hexadecimal format.
 		                        If not specified, the environment variable $("`ARKIMG_CLI_IV`") will be used.
@@ -179,8 +184,9 @@ void main()
 		           --pubkey |   Public key pem file for signing or 32-byte hexadecimal format.
 		                        If not specified, the environment variable $("`ARKIMG_CLI_PUBLIC_KEY`") will be used.
 		                        If neither is set, signing will not be performed.
+		 -p     --parameter |   Specify cryptographic information in parameter spec format instead of --key and --pubkey.
 		 -d        --detail |   Enable detailed mode. Default: false
-		        --disp-json |   Enable detailed mode. Default: false
+		             --json |   JSON output mode. Default: false
 		      --disp-digest |   Display the digest(SHA-256) of the secret data in detail mode. Default: true
 		        --disp-sign |   Display the  signature of the secret data in detail mode. Default: true
 		        --disp-mime |   Display the mime type of the secret data in detail mode. Default: true Default: true
@@ -198,6 +204,7 @@ void main()
 		
 		Edit files of arkimg.
 		$(exeBaseName) rm -i input.png -o output.png -s=secret.txt -k=$(key) --prvkey=$(prvkey)
+		<OPTIONS> of rm:
 		 -i      --in | * Input arkimg file name.
 		 -o     --out |   Output file name of secret data including arkimg.
 		                  If not specified, the file name of the meta information will be used.
@@ -261,13 +268,19 @@ void main()
 		<OPTIONS> of keyutil:
 		 -k    --genkey |   Generate a common key for encryption/decryption.
 		      --keysize |   Specify size of the common key in bit length. (default=128 or 192 or 256)
+		          --key |   Specify common key for parameter output. Cannot be used together with --genkey/--keysize.
+		                    If not specified, the environment variable $("`ARKIMG_CLI_KEY`") will be used.
 		        --geniv |   Specify the IV for encryption in 16-byte hexadecimal format.
 		                    If not specified, a random 16-byte sequence will be prepended to the data.
 		                    It is recommended not to specify this for security reasons.
+		           --iv |   Specify IV for parameter output. Cannot be used together with --geniv.
+		                    If not specified, the environment variable $("`ARKIMG_CLI_IV`") will be used.
 		    --genprvkey |   Generate a private key for sign.
 		       --prvkey |   Specify the private key in 32 bytes hexadecimal format for generating the public key.
-		                    If not specified, the environment variable $("`ARKIMG_CLI_KEY`") will be used.
-		    --genpubkey |   Generate a public key for verifing signature.
+		                    If not specified, the environment variable $("`ARKIMG_CLI_PRIVATE_KEY`") will be used.
+		    --genpubkey |   Generate a public key for verifying signature.
+		       --pubkey |   Specify public key for parameter output. Cannot be used together with --genpubkey.
+		                    If not specified, the environment variable $("`ARKIMG_CLI_PUBLIC_KEY`") will be used.
 		       --base64 |   Generate keys with Base64 format (Base64 URL NoPadding).
 		    --parameter |   Generate keys with parameter specs format.
 		 -v   --verbose |   Display verbose messages.
@@ -280,6 +293,7 @@ string uniqueName(string parent, string extension, string prefix = "")
 	import std.path, std.uuid;
 	return parent.buildPath(prefix ~ randomUUID.toString().setExtension(extension));
 }
+
 string createUniqueDir(string parent)
 {
 	import std.path, std.uuid;
@@ -287,6 +301,7 @@ string createUniqueDir(string parent)
 	mkdirRecurse(dir);
 	return dir;
 }
+
 bool compareStrings(ITxt...)(string a, ITxt txt)
 {
 	import std.conv;
@@ -294,10 +309,45 @@ bool compareStrings(ITxt...)(string a, ITxt txt)
 	immutable aLines = a.splitLines,
 		b = text(txt).chompPrefix("\n").outdent,
 		bLines = b.splitLines;
+	void dispDiff(in string[] lhs, in string[] rhs)
+	{
+		writeln("Compare is failed.");
+		writeln("--------------------------");
+		import std.algorithm: levenshteinDistanceAndPath, EditOp;
+		size_t lpos, rpos;
+		foreach (op; lhs.levenshteinDistanceAndPath(rhs)[1])
+		{
+			final switch (op)
+			{
+			case EditOp.none:
+				writefln("  %s", lhs[lpos++]);
+				rpos++;
+				break;
+			case EditOp.substitute:
+				writefln("- %s", lhs[lpos++]);
+				writefln("+ %s", rhs[rpos++]);
+				break;
+			case EditOp.insert:
+				writefln("+ %s", rhs[rpos++]);
+				break;
+			case EditOp.remove:
+				writefln("- %s", lhs[lpos++]);
+				break;
+			}
+		}
+		writeln("--------------------------");
+	}
+	if (aLines.length == bLines.length)
+	{
+		if (aLines == bLines)
+			return true;
+		dispDiff(aLines[], bLines[]);
+		return false;
+	}
 	if (!aLines[$-bLines.length - 1].startsWith("     Running")
 		|| !aLines.endsWith(bLines))
 	{
-		writeln("----------\n", a, "\n-----\n", b, "\n----------");
+		dispDiff(aLines[$-bLines.length..$], bLines[]);
 		return false;
 	}
 	return true;
@@ -323,13 +373,13 @@ auto execArkimgCliImpl(string[] args, string[string] env)
 string execArkimgCli(string[] args = null, string[string] env = null)
 {
 	auto result = execArkimgCliImpl(args, env);
-	enforce(result.status == 0);
+	enforce(result.status == 0, result.output);
 	return result.output;
 }
 
 string execArkimgCliFail(string[] args = null, string[string] env = null)
 {
 	auto result = execArkimgCliImpl(args, env);
-	enforce(result.status != 0);
+	enforce(result.status != 0, result.output);
 	return result.output;
 }

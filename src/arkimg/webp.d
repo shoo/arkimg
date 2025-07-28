@@ -1,3 +1,11 @@
+/*******************************************************************************
+ * WebP拡張
+ * 
+ * WebP画像のArkWebpクラスを定義します。
+ * このクラスはlibwebpに依存に依存させることで $(D baseImage) にBMP画像の読み書きをサポートさせることができます。
+ * `dub.selection.json` に依存を追加するか、このライブラリを継承したプロジェクトで依存を追加します。
+ * - `ArkWebp`: ArkImgのWebP用クラス。
+ */
 module arkimg.webp;
 
 import arkimg.bmp;

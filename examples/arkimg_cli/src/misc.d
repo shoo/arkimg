@@ -12,17 +12,93 @@ string toHexString(immutable(ubyte)[] binary)
 }
 
 ///
+void loadParameter(string parameter,
+	out immutable(ubyte)[] key, out immutable(ubyte)[] iv, out immutable(ubyte)[] pubkey)
+{
+	import std.algorithm, std.range, std.array, std.ascii, std.base64, std.conv, std.string, std.regex, std.exception;
+	if (parameter.length == 0)
+		return;
+	if (auto m = parameter.matchFirst(regex(r"^(?:k(16|24|32))(?:i(16))?(?:p(32))?-([0-9a-zA-Z-_]+)$")))
+	{
+		// Base64形式
+		auto bin = cast(immutable(ubyte)[])Base64URLNoPadding.decode(m.captures[4]);
+		auto keyLen    = m.captures[1].length > 0 ? m.captures[1].to!size_t : 0;
+		auto ivLen     = m.captures[2].length > 0 ? m.captures[2].to!size_t : 0;
+		auto pubKeyLen = m.captures[3].length > 0 ? m.captures[3].to!size_t : 0;
+		assert(keyLen == 16 || keyLen == 24 || keyLen == 32);
+		assert(ivLen == 0 || ivLen == 16);
+		assert(pubKeyLen == 0 || pubKeyLen == 32);
+		enforce(keyLen + ivLen + pubKeyLen == bin.length);
+		key    = bin[0..keyLen];
+		iv     = bin[keyLen .. keyLen + ivLen];
+		pubkey = pubKeyLen == 0 ? null : bin[keyLen + ivLen .. $].convertPublicKeyToDER();
+		return;
+	}
+	if (auto m = parameter.matchFirst(regex(r"^([0-9a-fA-F]{32}|[0-9a-fA-F]{48}|[0-9a-fA-F]{64})"
+		~ r"(?:-([0-9a-fA-F]{32}))?(?:-([0-9a-fA-F]{64}))?$")))
+	{
+		// 16進数形式
+		assert(m.captures[1].length == 16 || m.captures[1].length == 24 || m.captures[1].length == 32);
+		assert(m.captures[2].length == 0 || m.captures[2].length == 32);
+		assert(m.captures[3].length == 0 || m.captures[3].length == 64);
+		key    = cast(immutable(ubyte)[])m.captures[1].chunks(2).map!(a => a.to!ubyte(16)).array;
+		iv     = cast(immutable(ubyte)[])m.captures[2].chunks(2).map!(a => a.to!ubyte(16)).array;
+		pubkey = convertPublicKeyToDER(cast(immutable(ubyte)[])m.captures[3].chunks(2).map!(a => a.to!ubyte(16)).array);
+	}
+}
+
+@system unittest
+{
+	immutable(ubyte)[] key;
+	immutable(ubyte)[] iv;
+	immutable(ubyte)[] pubkey;
+	loadParameter("k16p32-nerNAaaqW9Q4ssfQi1t3kLNm98ZEZGcqntPw0mJYB9GEREpTUJTVDTExmh8GtE-i", key, iv, pubkey);
+	assert(key == cast(immutable(ubyte)[])x"9DEACD01A6AA5BD438B2C7D08B5B7790");
+	assert(iv == cast(immutable(ubyte)[])x"");
+	auto pubkeyRaw = pubkey.convertPublicKeyToRaw();
+	assert(pubkeyRaw == cast(immutable(ubyte)[])x"B366F7C64464672A9ED3F0D2625807D184444A535094D50D31319A1F06B44FA2");
+	
+	loadParameter("k99p32--i", key, iv, pubkey);
+	assert(key == cast(immutable(ubyte)[])x"");
+	assert(iv == cast(immutable(ubyte)[])x"");
+	assert(pubkey == cast(immutable(ubyte)[])x"");
+	
+	loadParameter("9DEACD01A6AA5BD438B2C7D08B5B7790-B366F7C64464672A9ED3F0D2625807D184444A535094D50D31319A1F06B44FA2",
+		key, iv, pubkey);
+	assert(key == cast(immutable(ubyte)[])x"9DEACD01A6AA5BD438B2C7D08B5B7790");
+	assert(iv == cast(immutable(ubyte)[])x"");
+	pubkeyRaw = pubkey.convertPublicKeyToRaw();
+	assert(pubkeyRaw == cast(immutable(ubyte)[])x"B366F7C64464672A9ED3F0D2625807D184444A535094D50D31319A1F06B44FA2");
+	
+}
+
+///
 immutable(ubyte)[] loadCommonKey(string key)
 {
-	import std.file, std.algorithm, std.range, std.array, std.ascii, std.base64, std.conv;
+	import std.file, std.algorithm, std.range, std.array, std.ascii, std.base64, std.conv, std.string;
 	if (key.length == 0)
 		return null;
 	if (key.exists)
-		return std.file.readText(key).convertPublicKeyToDER();
+		return std.file.readText(key).chomp.chunks(2).map!(a => a.to!ubyte(16)).array;
 	if (key.all!isHexDigit)
 		return cast(immutable(ubyte)[])key.chunks(2).map!(a => a.to!ubyte(16)).array;
 	if (key.all!(c => c.isDigit || c.isAlpha || (c == '-' || c == '_')))
 		return Base64URLNoPadding.decode(key);
+	return null;
+}
+
+///
+immutable(ubyte)[] loadIV(string iv)
+{
+	import std.file, std.algorithm, std.range, std.array, std.ascii, std.base64, std.conv, std.string;
+	if (iv.length == 0)
+		return null;
+	if (iv.exists)
+		return std.file.readText(iv).chomp.chunks(2).map!(a => a.to!ubyte(16)).array();
+	if (iv.all!isHexDigit)
+		return cast(immutable(ubyte)[])iv.chunks(2).map!(a => a.to!ubyte(16)).array;
+	if (iv.all!(c => c.isDigit || c.isAlpha || (c == '-' || c == '_')))
+		return Base64URLNoPadding.decode(iv);
 	return null;
 }
 

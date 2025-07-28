@@ -20,6 +20,7 @@ int extractCommand(string[] args)
 	string commonKeyArg = environment.get("ARKIMG_CLI_KEY");
 	string ivArg        = environment.get("ARKIMG_CLI_IV");
 	string pubKeyArg    = environment.get("ARKIMG_CLI_PUBLIC_KEY");
+	string parameterArg;
 	bool force;
 	bool verbose;
 	try
@@ -34,7 +35,7 @@ int extractCommand(string[] args)
 				~ "If not specified, the file name of the meta information will be used.\n"
 				~ "And if there is no meta information, the default name will be used.",
 				&outputDirName,
-			std.getopt.config.required, "key|k",
+			"key|k",
 				"Specify the common key for encryption in 16/32-byte(AES128/256) hexadecimal format.\n"
 				~ "If not specified, the environment variable `ARKIMG_CLI_KEY` will be used.",
 				&commonKeyArg,
@@ -49,6 +50,9 @@ int extractCommand(string[] args)
 				~ "If not specified, the environment variable `ARKIMG_CLI_PUBLIC_KEY` will be used.\n"
 				~ "If neither is set, signing will not be performed.",
 				&pubKeyArg,
+			"parameter|p",
+				"Specify cryptographic information in parameter spec format instead of --key and --pubkey.",
+				&parameterArg,
 			"force|f",
 				"Overwrite the output file if it already exists.",
 				&force,
@@ -84,9 +88,27 @@ int extractCommand(string[] args)
 	}
 	
 	// 鍵情報読み込み
-	auto commonKey = loadCommonKey(commonKeyArg);
-	auto iv = ivArg.length > 0 ? ivArg.chunks(2).map!(a => a.to!ubyte(16)).array : null;
-	auto pubKeyDER = loadPublicKey(pubKeyArg);
+	immutable(ubyte)[] commonKey = null;
+	immutable(ubyte)[] iv        = null;
+	immutable(ubyte)[] pubKeyDER = null;
+	
+	if (parameterArg.length > 0)
+	{
+		parameterArg.loadParameter(commonKey, iv, pubKeyDER);
+	}
+	else
+	{
+		commonKey = loadCommonKey(commonKeyArg);
+		iv        = loadIV(ivArg);
+		pubKeyDER = loadPublicKey(pubKeyArg);
+	}
+	
+	if (commonKey.length == 0)
+	{
+		errorf("Required option key|k or parameter|p was not supplied.");
+		return -1;
+	}
+	
 	if (pubKeyArg.length > 0 && pubKeyDER.length == 0)
 	{
 		errorf("Unsupported public key type.");

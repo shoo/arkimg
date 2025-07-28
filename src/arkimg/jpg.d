@@ -1,5 +1,12 @@
+/*******************************************************************************
+ * JPEG拡張
+ * 
+ * JPEG画像のArkJpegクラスを定義します。
+ * このクラスはlibjpeg-turboに依存させることで $(D baseImage) にBMP画像の読み書きをサポートさせることができます。
+ * `dub.selection.json` に依存を追加するか、このライブラリを継承したプロジェクトで依存を追加します。
+ * - `ArkJpeg`: ArkImgのJPEG用クラス。
+ */
 module arkimg.jpg;
-
 
 import arkimg._internal.base;
 import arkimg.bmp;
