@@ -47,7 +47,7 @@ jobs:
   #  steps:
   #    - uses: actions/checkout@v4
   #      with:
-  #        ref: master
+  #        ref: main
   #    - name: Install D compiler
   #      uses: dlang-community/setup-dlang@v2
   #      with:
@@ -86,7 +86,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
         with:
-          ref: master
+          ref: main
       - name: Install D compiler
         uses: dlang-community/setup-dlang@v2
         with:
@@ -102,7 +102,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
         with:
-          ref: master
+          ref: main
       - name: Install D compiler
         uses: dlang-community/setup-dlang@v2
         with:
@@ -128,7 +128,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
         with:
-          ref: master
+          ref: main
       - name: Install D compiler
         uses: dlang-community/setup-dlang@v2
         with:
@@ -152,7 +152,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
         with:
-          ref: master
+          ref: main
       - name: Install D compiler
         uses: dlang-community/setup-dlang@v2
         with:
@@ -176,7 +176,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
         with:
-          ref: master
+          ref: main
       - name: Install D compiler
         uses: dlang-community/setup-dlang@v2
         with:
@@ -201,7 +201,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
         with:
-          ref: master
+          ref: main
       - name: Install D compiler
         uses: dlang-community/setup-dlang@v2
         with:
@@ -232,7 +232,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
         with:
-          ref: master
+          ref: main
       - name: Install libraries
         run: sudo apt-get update && sudo apt-get install -y libpng-dev libturbojpeg0-dev libjpeg-turbo8-dev libwebp-dev
       - name: Install D compiler
@@ -259,7 +259,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
         with:
-          ref: master
+          ref: main
       - name: Install libraries
         run: sudo apt-get update && sudo apt-get install -y libpng-dev libturbojpeg0-dev libjpeg-turbo8-dev libwebp-dev
       - name: Install D compiler
@@ -285,7 +285,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
         with:
-          ref: master
+          ref: main
       - name: Install libraries
         run: sudo apt-get update && sudo apt-get install -y libpng-dev libturbojpeg0-dev libjpeg-turbo8-dev libwebp-dev
       - name: Install D compiler
@@ -327,7 +327,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
         with:
-          ref: master
+          ref: main
       - name: Install libraries
         run: brew install libpng jpeg-turbo webp
       - name: Install D compiler
@@ -354,7 +354,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
         with:
-          ref: master
+          ref: main
       - name: Install libraries
         run: brew install libpng jpeg-turbo webp
       - name: Install D compiler

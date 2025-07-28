@@ -217,49 +217,51 @@ void integrationTest(string[] exDubOpts = null)
 {
 	string[string] env;
 	env.addCurlPath();
-	auto covdir = config.scriptDir.buildNormalizedPath("../../.cov").absolutePath();
-	if (!covdir.exists)
-		mkdirRecurse(covdir);
+	auto projDir = config.scriptDir.buildNormalizedPath("../..").absolutePath();
+	auto covDir  = projDir.buildPath(".cov").absolutePath();
+	if (!covDir.exists)
+		mkdirRecurse(covDir);
 	
 	auto covopt = [
-		"--DRT-covopt=dstpath:" ~ covdir.absolutePath(),
-		"--DRT-covopt=srcpath:" ~ config.scriptDir.buildNormalizedPath("../..").absolutePath(),
+		"--DRT-covopt=dstpath:" ~ covDir,
+		"--DRT-covopt=srcpath:" ~ projDir,
 		"--DRT-covopt=merge:1"];
 	
 	bool dirTest(string entry)
 	{
+		auto testDir = entry.absolutePath().buildNormalizedPath();
 		auto expMap = [
-			"project_root": config.scriptDir.absolutePath().buildNormalizedPath("../.."),
-			"test_dir": entry.absolutePath().buildNormalizedPath(),
+			"project_root": projDir,
+			"test_dir": testDir,
 		];
 		auto getOpts(string defaultname, string optfile, string ignorefile)
 		{
 			struct Opt
 			{
 				string name;
-				string dubWorkDir;
+				string buildWorkDir;
 				string[] dubArgs;
-				string workDir;
+				string runWorkDir;
 				string[] args;
 				string[string] env;
 			}
 			if (entry.buildPath(ignorefile).exists)
 				return Opt[].init;
 			if (!entry.buildPath(optfile).exists)
-				return [Opt("default", entry, [], entry, [], env)];
+				return [Opt("default", projDir, [], testDir, [], env)];
 			Opt[] ret;
 			import std.file: read;
 			auto jvRoot = parseJSON(cast(string)read(entry.buildPath(optfile)));
 			foreach (i, jvOpt; jvRoot.array)
 			{
-				auto dat = Opt(text(defaultname, i), entry, [], entry, [], env);
+				auto dat = Opt(text(defaultname, i), projDir, [], testDir, [], env);
 				if (auto str = jvOpt.getStr("name", expMap))
 					dat.name = str;
-				if (auto str = jvOpt.getStr("dubWorkDir", expMap))
-					dat.dubWorkDir = str;
+				if (auto str = jvOpt.getStr("buildWorkDir", expMap))
+					dat.buildWorkDir = str;
 				dat.dubArgs = jvOpt.getAry("dubArgs", expMap);
-				if (auto str = jvOpt.getStr("workDir", expMap))
-					dat.workDir = str;
+				if (auto str = jvOpt.getStr("runWorkDir", expMap))
+					dat.runWorkDir = str;
 				dat.args = jvOpt.getAry("args", expMap);
 				foreach (k, v; jvOpt.getObj("env", expMap))
 					dat.env[k] = v;
@@ -280,34 +282,38 @@ void integrationTest(string[] exDubOpts = null)
 			{
 				dispLog("INFO", entry.baseName, "build test for " ~ buildOpt.name);
 				auto dubArgs = (buildOpt.dubArgs.length > 0 ? dubCommonArgs ~ buildOpt.dubArgs : dubCommonArgs);
-				dubArgs ~= "--root=" ~ buildOpt.dubWorkDir.absolutePath;
-				exec(["dub", "build", "-b=release"] ~ dubArgs,
-					buildOpt.workDir, buildOpt.env);
+				dubArgs ~= "--root=" ~ testDir;
+				exec(["dub", "build", "-b=release"] ~ dubArgs, buildOpt.buildWorkDir, buildOpt.env);
 			}
 			foreach (testOpt; testOpts)
 			{
 				dispLog("INFO", entry.baseName, "unittest for " ~ testOpt.name);
 				auto dubArgs = (testOpt.dubArgs.length > 0 ? dubCommonArgs ~ testOpt.dubArgs : dubCommonArgs)
-				             ~ (!no_coverage ? ["--coverage"] : null);
+				             ~ (!no_coverage ? ["-b=unittest-cov", "-c=unittest"] : ["-b=unittest", "-c=unittest"]);
+				auto desc = cmd(["dub", "describe", "--verror"] ~ dubArgs, ".", testOpt.env).parseJSON();
+				auto targetExe = buildNormalizedPath(
+					desc["packages"][0]["path"].str,
+					desc["packages"][0]["targetPath"].str,
+					desc["packages"][0]["targetFileName"].str);
+				dubArgs ~= "--root=" ~ testDir;
+				exec(["dub", "build"] ~ dubArgs, testOpt.buildWorkDir, testOpt.env);
 				auto exeArgs = ["--"] ~ (!no_coverage ? covopt : null);
-				dubArgs ~= "--root=" ~ testOpt.dubWorkDir.absolutePath;
-				exec(["dub", "test"] ~ dubArgs ~ exeArgs,
-					testOpt.workDir, testOpt.env);
+				exec([targetExe] ~ exeArgs, testOpt.runWorkDir, testOpt.env);
 			}
 			foreach (runOpt; runOpts)
 			{
 				dispLog("INFO", entry.baseName, "run test for " ~ runOpt.name);
 				auto dubArgs = (runOpt.dubArgs.length > 0 ? dubCommonArgs ~ runOpt.dubArgs : dubCommonArgs)
 				             ~ (!no_coverage ? ["-b=cov"] : ["-b=debug"]);
-				dubArgs ~= "--root=" ~ runOpt.dubWorkDir.absolutePath;
-				auto exeArgs = runOpt.args ~ (!no_coverage ? covopt : null);
+				dubArgs ~= "--root=" ~ testDir;
 				auto desc = cmd(["dub", "describe", "--verror"] ~ dubArgs, ".", runOpt.env).parseJSON();
 				auto targetExe = buildNormalizedPath(
 					desc["packages"][0]["path"].str,
 					desc["packages"][0]["targetPath"].str,
 					desc["packages"][0]["targetFileName"].str);
-				exec(["dub", "build", "-v", "-f"] ~ dubArgs, runOpt.workDir, runOpt.env);
-				exec([targetExe] ~ exeArgs, runOpt.workDir, runOpt.env);
+				exec(["dub", "build", "-v", "-f"] ~ dubArgs, runOpt.buildWorkDir, runOpt.env);
+				auto exeArgs = runOpt.args ~ (!no_coverage ? covopt : null);
+				exec([targetExe] ~ exeArgs, runOpt.runWorkDir, runOpt.env);
 			}
 			return !(buildOpts.length == 0 && testOpts.length == 0 && runOpts.length == 0);
 		}

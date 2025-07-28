@@ -109,7 +109,7 @@ int encryptCommand(string[] args)
 	// 鍵情報読み込み
 	auto commonKey = loadCommonKey(commonKeyArg);
 	auto iv        = loadIV(ivArg);
-	auto prvKeyDER = loadPublicKey(prvKeyArg);
+	auto prvKeyDER = loadPrivateKey(prvKeyArg);
 	if (prvKeyArg.length > 0 && prvKeyDER.length == 0)
 	{
 		(cast()sharedLog).errorf("Unsupported public key type.");
