@@ -47,7 +47,7 @@ void main()
 		pubkey2 = m.captures[1].dup;
 	assert(pubkey == pubkey2, result);
 	assert(result.compareStrings(i`
-		Parameter: $(key)-$(pubkey)
+		Parameter:  $(key)-$(pubkey)
 		`));
 	
 	auto keybin    = cast(immutable(ubyte)[])key.chunks(2).map!(a => a.to!ubyte(16)).array;
@@ -58,7 +58,27 @@ void main()
 		pubkey2 = m.captures[1].dup;
 	assert(pubkey == pubkey2, result);
 	assert(result.compareStrings(i`
-		Parameter: k16p32-$(Base64URLNoPadding.encode(keybin~pubkeybin))
+		Parameter:  k16p32-$(Base64URLNoPadding.encode(keybin~pubkeybin))
+		`));
+	
+	result = execArkimgCli(["keyutil", "--genkey", "--genprvkey", "--genpubkey", "--parameter", "-v"]);
+	key = null;
+	pubkey = null;
+	prvkey = null;
+	if (auto m = result.matchFirst(regex(r"^Parameter:  ([0-9A-F]{32})-([0-9A-F]{64})$", "m")))
+	{
+		key = m.captures[1];
+		pubkey = m.captures[2];
+	}
+	assert(key.length > 0, result);
+	assert(pubkey.length > 0, result);
+	if (auto m = result.matchFirst(regex(r"^PrivateKey: ([0-9A-F]{64})$", "m")))
+		prvkey = m.captures[1];
+	assert(prvkey.length > 0, result);
+	assert(result.compareStrings(i`
+		Parameter:  $(key)-$(pubkey)
+		CommonKey:  $(key)
+		PrivateKey: $(prvkey)
 		`));
 }
 

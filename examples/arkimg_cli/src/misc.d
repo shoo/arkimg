@@ -18,6 +18,12 @@ void loadParameter(string parameter,
 	import std.algorithm, std.range, std.array, std.ascii, std.base64, std.conv, std.string, std.regex, std.exception;
 	if (parameter.length == 0)
 		return;
+	if (auto m = parameter.matchFirst(regex(r"^([0-9a-zA-Z-_]{22}|[0-9a-zA-Z-_]{32}|[0-9a-zA-Z-_]{43})$")))
+	{
+		// Base64形式
+		key = cast(immutable(ubyte)[])Base64URLNoPadding.decode(m.captures[1]);
+		return;
+	}
 	if (auto m = parameter.matchFirst(regex(r"^(?:k(16|24|32))(?:i(16))?(?:p(32))?-([0-9a-zA-Z-_]+)$")))
 	{
 		// Base64形式
@@ -70,6 +76,10 @@ void loadParameter(string parameter,
 	pubkeyRaw = pubkey.convertPublicKeyToRaw();
 	assert(pubkeyRaw == cast(immutable(ubyte)[])x"B366F7C64464672A9ED3F0D2625807D184444A535094D50D31319A1F06B44FA2");
 	
+	loadParameter("nerNAaaqW9Q4ssfQi1t3kA", key, iv, pubkey);
+	assert(key == cast(immutable(ubyte)[])x"9DEACD01A6AA5BD438B2C7D08B5B7790");
+	assert(iv == cast(immutable(ubyte)[])x"");
+	assert(pubkey == cast(immutable(ubyte)[])x"");
 }
 
 ///
@@ -79,12 +89,40 @@ immutable(ubyte)[] loadCommonKey(string key)
 	if (key.length == 0)
 		return null;
 	if (key.exists)
-		return std.file.readText(key).chomp.chunks(2).map!(a => a.to!ubyte(16)).array;
+		return std.file.readText(key).chomp.loadCommonKey();
 	if (key.all!isHexDigit)
 		return cast(immutable(ubyte)[])key.chunks(2).map!(a => a.to!ubyte(16)).array;
-	if (key.all!(c => c.isDigit || c.isAlpha || (c == '-' || c == '_')))
+	if ((key.length == 22 || key.length == 32 || key.length == 43)
+		&& key.all!(c => c.isDigit || c.isAlpha || (c == '-' || c == '_')))
 		return Base64URLNoPadding.decode(key);
 	return null;
+}
+
+@system unittest
+{
+	auto key = loadCommonKey("9DEACD01A6AA5BD438B2C7D08B5B7790");
+	assert(key == cast(immutable(ubyte)[])x"9DEACD01A6AA5BD438B2C7D08B5B7790");
+	
+	key = loadCommonKey("nerNAaaqW9Q4ssfQi1t3kA");
+	assert(key == cast(immutable(ubyte)[])x"9DEACD01A6AA5BD438B2C7D08B5B7790");
+	
+	key = loadCommonKey("");
+	assert(key == cast(immutable(ubyte)[])x"");
+	
+	key = loadCommonKey("xxx");
+	assert(key == cast(immutable(ubyte)[])x"");
+	
+	import std.file, std.uuid;
+	auto keyFile = "." ~ randomUUID.toString() ~ ".key";
+	scope (exit)
+		remove(keyFile);
+	std.file.write(keyFile, "9DEACD01A6AA5BD438B2C7D08B5B7790");
+	key = loadCommonKey(keyFile);
+	assert(key == cast(immutable(ubyte)[])x"9DEACD01A6AA5BD438B2C7D08B5B7790");
+	
+	std.file.write(keyFile, "9DEACD01A6AA5BD438B2C7D08B5B7790\n");
+	key = loadCommonKey(keyFile);
+	assert(key == cast(immutable(ubyte)[])x"9DEACD01A6AA5BD438B2C7D08B5B7790");
 }
 
 ///
@@ -94,12 +132,38 @@ immutable(ubyte)[] loadIV(string iv)
 	if (iv.length == 0)
 		return null;
 	if (iv.exists)
-		return std.file.readText(iv).chomp.chunks(2).map!(a => a.to!ubyte(16)).array();
+		return std.file.readText(iv).chomp.loadIV();
 	if (iv.all!isHexDigit)
 		return cast(immutable(ubyte)[])iv.chunks(2).map!(a => a.to!ubyte(16)).array;
-	if (iv.all!(c => c.isDigit || c.isAlpha || (c == '-' || c == '_')))
+	if (iv.length == 22 && iv.all!(c => c.isDigit || c.isAlpha || (c == '-' || c == '_')))
 		return Base64URLNoPadding.decode(iv);
 	return null;
+}
+
+@system unittest
+{
+	auto iv = loadIV("7015E8F3993846605479982491495DAF");
+	assert(iv == cast(immutable(ubyte)[])x"7015E8F3993846605479982491495DAF");
+	
+	iv = loadIV("cBXo85k4RmBUeZgkkUldrw");
+	assert(iv == cast(immutable(ubyte)[])x"7015E8F3993846605479982491495DAF");
+	
+	iv = loadIV("");
+	assert(iv == cast(immutable(ubyte)[])x"");
+	
+	iv = loadIV("xxx");
+	assert(iv == cast(immutable(ubyte)[])x"");
+	
+	import std.file, std.uuid;
+	auto ivFile = "." ~ randomUUID.toString() ~ ".iv";
+	scope (exit)
+		remove(ivFile);
+	std.file.write(ivFile, "7015E8F3993846605479982491495DAF");
+	iv = loadIV(ivFile);
+	assert(iv == cast(immutable(ubyte)[])x"7015E8F3993846605479982491495DAF");
+	std.file.write(ivFile, "7015E8F3993846605479982491495DAF\n");
+	iv = loadIV(ivFile);
+	assert(iv == cast(immutable(ubyte)[])x"7015E8F3993846605479982491495DAF");
 }
 
 ///
@@ -117,7 +181,7 @@ immutable(ubyte)[] loadPrivateKey(string key)
 			der = convertPrivateKeyToDER(der);
 		return der;
 	}
-	if (key.all!(c => c.isDigit || c.isAlpha || (c == '-' || c == '_')))
+	if (key.length == 43 && key.all!(c => c.isDigit || c.isAlpha || (c == '-' || c == '_')))
 	{
 		auto der = cast(immutable(ubyte)[])Base64URLNoPadding.decode(key);
 		if (der.length == 32)
@@ -125,6 +189,32 @@ immutable(ubyte)[] loadPrivateKey(string key)
 		return der;
 	}
 	return null;
+}
+
+@system unittest
+{
+	enum testDER = cast(immutable(ubyte)[])
+		x"302E020100300506032B657004220420CF9AE7A844F1B3CD0CCF37223C4858A6E5D40E6BA4D1429B12B6B3086261F919";
+	auto prvKey = loadPrivateKey("CF9AE7A844F1B3CD0CCF37223C4858A6E5D40E6BA4D1429B12B6B3086261F919");
+	import std; writefln("%(%02X%)", prvKey);
+	assert(prvKey == testDER);
+	
+	prvKey = loadPrivateKey("z5rnqETxs80MzzciPEhYpuXUDmuk0UKbErazCGJh-Rk");
+	assert(prvKey == testDER);
+	
+	prvKey = loadPrivateKey("");
+	assert(prvKey == cast(immutable(ubyte)[])x"");
+	
+	prvKey = loadPrivateKey("xxx");
+	assert(prvKey == cast(immutable(ubyte)[])x"");
+	
+	import std.file, std.uuid;
+	auto prvKeyFile = "." ~ randomUUID.toString() ~ ".prvkey";
+	scope (exit)
+		remove(prvKeyFile);
+	std.file.write(prvKeyFile, testDER.convertPrivateKeyToPEM());
+	prvKey = loadPrivateKey(prvKeyFile);
+	assert(prvKey == testDER);
 }
 
 ///
@@ -145,7 +235,7 @@ immutable(ubyte)[] loadPublicKey(string key)
 			der = convertPublicKeyToDER(der);
 		return der;
 	}
-	if (key.all!(c => c.isDigit || c.isAlpha || (c == '-' || c == '_')))
+	if (key.length == 43 && key.all!(c => c.isDigit || c.isAlpha || (c == '-' || c == '_')))
 	{
 		auto der = cast(immutable(ubyte)[])Base64URLNoPadding.decode(key);
 		if (der.length == 32)
@@ -153,6 +243,32 @@ immutable(ubyte)[] loadPublicKey(string key)
 		return der;
 	}
 	return null;
+}
+
+@system unittest
+{
+	enum testDER = cast(immutable(ubyte)[])
+		x"302A300506032B6570032100B366F7C64464672A9ED3F0D2625807D184444A535094D50D31319A1F06B44FA2";
+	auto prvKey = loadPublicKey("B366F7C64464672A9ED3F0D2625807D184444A535094D50D31319A1F06B44FA2");
+	import std; writefln("%(%02X%)", prvKey);
+	assert(prvKey == testDER);
+	
+	prvKey = loadPublicKey("s2b3xkRkZyqe0_DSYlgH0YRESlNQlNUNMTGaHwa0T6I");
+	assert(prvKey == testDER);
+	
+	prvKey = loadPublicKey("");
+	assert(prvKey == cast(immutable(ubyte)[])x"");
+	
+	prvKey = loadPublicKey("xxx");
+	assert(prvKey == cast(immutable(ubyte)[])x"");
+	
+	import std.file, std.uuid;
+	auto pubKeyFile = "." ~ randomUUID.toString() ~ ".pubkey";
+	scope (exit)
+		remove(pubKeyFile);
+	std.file.write(pubKeyFile, testDER.convertPublicKeyToPEM());
+	prvKey = loadPublicKey(pubKeyFile);
+	assert(prvKey == testDER);
 }
 
 

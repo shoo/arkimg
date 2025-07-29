@@ -458,6 +458,8 @@ arkimg keyutil <OPTIONS>
 You can bundle an encryption key and public key together into a single parameter string.
 Parameters follow a format represented by the following regular expression.
 
+- `^((?:[0-9a-zA-Z-_]{22})|(?:[0-9a-zA-Z-_]{32})|(?:[0-9a-zA-Z-_]{43}))$`
+  - This format is the common key encoded in Base64URL (NoPadding).
 - `^(?:k(16|24|32))(?:i(16))?(?:p(32))?-([0-9a-zA-Z-_]+)$`
 - `^([0-9a-fA-F]{32}|[0-9a-fA-F]{48}|[0-9a-fA-F]{64})(?:-([0-9a-fA-F]{32}))?(?:-([0-9a-fA-F]{64}))?$`
 

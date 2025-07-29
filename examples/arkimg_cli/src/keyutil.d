@@ -158,8 +158,16 @@ int keyutilCommand(string[] args)
 	// メイン処理実行
 	if (parameter)
 	{
-		writeln("Parameter: ", getParameter(generatedCommonKey, generatedIV, generatedPublicKey, base64));
-		if (genPrvKey)
+		writeln("Parameter:  ", getParameter(generatedCommonKey, generatedIV, generatedPublicKey, base64));
+		if (genCommonKey && generatedCommonKey.length > 0)
+			writeln("CommonKey:  ", base64
+				? Base64URLNoPadding.encode(generatedCommonKey)
+				: format("%(%02X%)", generatedCommonKey));
+		if (genIV && generatedIV.length > 0)
+			writeln("IV:         ", base64
+				? Base64URLNoPadding.encode(generatedIV)
+				: format("%(%02X%)", generatedIV));
+		if (genPrvKey && generatedPrivateKey.length > 0)
 			writeln("PrivateKey: ", base64
 				? Base64URLNoPadding.encode(generatedPrivateKey)
 				: format("%(%02X%)", generatedPrivateKey));
