@@ -254,6 +254,18 @@ align (1):
 	 * 予約
 	 */
 	uint         reserved = 0;
+	
+	/***************************************************************************
+	 * アルファチャンネルの設定
+	 */
+	void initAlpha() @safe pure nothrow @nogc
+	{
+		compression = 3;
+		redMask   = 0x00FF0000;
+		greenMask = 0x0000FF00;
+		blueMask  = 0x000000FF;
+		alphaMask = 0xFF000000;
+	}
 }
 
 
@@ -524,6 +536,39 @@ public:
 	}
 	
 	/***************************************************************************
+	 * 
+	 */
+	Bitmap alphaBrend(uint color = 0xFFFFFF) const @system @nogc
+	in (channels == 4)
+	{
+		auto ret = createBitmap(size, 8, 3);
+		immutable imgsize = size;
+		immutable h = imgsize.height < 0 ? -imgsize.height : imgsize.height;
+		immutable w = imgsize.width;
+		int bgR = (color & 0xFF0000) >> 16;
+		int bgG = (color & 0x00FF00) >> 8;
+		int bgB = (color & 0x0000FF) >> 0;
+		foreach (y; 0..h)
+		{
+			auto srcPixels = row(y);
+			auto dstPixels = ret.row(y);
+			foreach (x; 0..w)
+			{
+				int b = srcPixels[x * 4 + 0];
+				int g = srcPixels[x * 4 + 1];
+				int r = srcPixels[x * 4 + 2];
+				int a = srcPixels[x * 4 + 3];
+				// 背景色にアルファ合成
+				dstPixels[x * 3 + 0] = cast(ubyte)((a * b + (255 - a) * bgR) / 255);
+				dstPixels[x * 3 + 1] = cast(ubyte)((a * g + (255 - a) * bgG) / 255);
+				dstPixels[x * 3 + 2] = cast(ubyte)((a * r + (255 - a) * bgB) / 255);
+			}
+		}
+		return ret;
+	}
+	
+	
+	/***************************************************************************
 	 * 初期化
 	 */
 	void initialize(size_t fileHeaderSize, size_t infoHeaderSize, ushort colorPalleteCnt, BmpSize size,
@@ -553,6 +598,8 @@ public:
 		counted.initializeCountedInstance(newSize);
 		auto initBuf = cast(ubyte*)&tmp;
 		buffer[0..headSize] = initBuf[0..headSize];
+		if (infoHeaderSize == BitmapInformationHeaderV5.sizeof && dpp == 32)
+			infoV5.initAlpha();
 	}
 	
 	/// ditto

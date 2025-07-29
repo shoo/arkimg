@@ -7,7 +7,7 @@ private import crypto = arkimg._internal.crypto;
 /*******************************************************************************
  * ファイル名からMIMEタイプの取得 / Get MIME type from filename
  */
-string mimeType(string filename)
+string mimeType(string filename) @safe
 {
 	import std.path, std.string;
 	switch (filename.extension.toLower)
@@ -147,6 +147,81 @@ string mimeType(string filename)
 	}
 }
 
+@safe unittest
+{
+	struct Dat
+	{
+		string file;
+		string mime;
+	}
+	foreach (dat; [
+		Dat("test.png",         "image/png"),
+		Dat("test.jpg",         "image/jpeg"),
+		Dat("test.webp",        "image/webp"),
+		Dat("test.bmp",         "image/bmp"),
+		Dat("test.avif",        "image/avif"),
+		Dat("test.tif",         "image/tiff"),
+		Dat("test.tiff",        "image/tiff"),
+		Dat("test.svg",         "image/svg+xml"),
+		Dat("test.gif",         "image/gif"),
+		Dat("test.ico",         "image/vnd.microsoft.icon"),
+		Dat("test.zip",         "application/zip"),
+		Dat("test.tar",         "application/x-tar"),
+		Dat("test.bz",          "application/x-bzip"),
+		Dat("test.bz2",         "application/x-bzip2"),
+		Dat("test.gz",          "application/gzip"),
+		Dat("test.7z",          "application/x-7z-compressed"),
+		Dat("test.rar",         "application/vnd.rar"),
+		Dat("test.pdf",         "application/pdf"),
+		Dat("test.txt",         "text/plain"),
+		Dat("test.html",        "text/html"),
+		Dat("test.htm",         "text/html"),
+		Dat("test.xml",         "text/xml"),
+		Dat("test.css",         "text/css"),
+		Dat("test.js",          "text/javascript"),
+		Dat("test.json",        "application/json"),
+		Dat("test.cbor",        "application/cbor"),
+		Dat("test.c",           "text/x-csrc"),
+		Dat("test.h",           "text/x-chdr"),
+		Dat("test.cpp",         "text/x-c++src"),
+		Dat("test.hpp",         "text/x-c++hdr"),
+		Dat("test.py",          "text/x-python"),
+		Dat("test.d",           "text/x-dsrc"),
+		Dat("test.di",          "text/x-dsrc"),
+		Dat("test.rs",          "text/x-rustsrc"),
+		Dat("test.sh",          "application/x-shellscript"),
+		Dat("test.bat",         "application/x-bat"),
+		Dat("test.ps1",         "application/x-powershell"),
+		Dat("test.aac",         "audio/aac"),
+		Dat("test.mp3",         "audio/mpeg"),
+		Dat("test.ogg",         "audio/ogg"),
+		Dat("test.oga",         "audio/ogg"),
+		Dat("test.mka",         "audio/x-matroska"),
+		Dat("test.flac",        "audio/x-flac"),
+		Dat("test.wav",         "audio/x-wav"),
+		Dat("test.avi",         "video/x-msvideo"),
+		Dat("test.ogv",         "video/ogg"),
+		Dat("test.mp4",         "video/mp4"),
+		Dat("test.mpg",         "video/mpeg"),
+		Dat("test.mpeg",        "video/mpeg"),
+		Dat("test.webm",        "video/webm"),
+		Dat("test.ts",          "video/mp2t"),
+		Dat("test.mkv",         "video/x-matroska"),
+		Dat("test.pt",          "application/x-pytorch"),
+		Dat("test.safetensors", "application/x-safetensors"),
+		Dat("test.gguf",        "application/x-gguf"),
+		Dat("test.onnx",        "application/x-onnx"),
+		Dat("test.ppt",         "application/vnd.ms-powerpoint"),
+		Dat("test.pptx",        "application/vnd.openxmlformats-officedocument.presentationml.presentation"),
+		Dat("test.doc",         "application/msword"),
+		Dat("test.docx",        "application/vnd.openxmlformats-officedocument.wordprocessingml.document"),
+		Dat("test.xls",         "application/vnd.ms-excel"),
+		Dat("test.xlsx",        "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"),
+	])
+	{
+		assert(dat.file.mimeType == dat.mime);
+	}
+}
 
 /*******************************************************************************
  * 共通鍵生成 / Generation of AES common key
@@ -156,9 +231,10 @@ immutable(ubyte)[] createCommonKey(RandomGen = Random)(size_t keySize, RandomGen
 	return crypto.createCommonKey(keySize, rng);
 }
 /// ditto
-immutable(ubyte)[] createCommonKey(size_t keySize = 32)
+immutable(ubyte)[] createCommonKey(size_t keySize = 16)
 {
-	return crypto.createCommonKey(keySize);
+	import std.random: rndGen;
+	return createCommonKey(keySize, rndGen);
 }
 
 /*******************************************************************************
@@ -178,7 +254,8 @@ immutable(ubyte)[] createRandomIV(RandomGen = Random)(RandomGen rng)
 /// ditto
 immutable(ubyte)[] createRandomIV()
 {
-	return crypto.createRandomIV();
+	import std.random: rndGen;
+	return createRandomIV(rndGen);
 }
 
 /*******************************************************************************
@@ -312,7 +389,7 @@ immutable(ubyte)[] saveImage(ArkImg img, string mimeType = "image/png", in ubyte
 		return img.save();
 	}
 	retimg.setKey(commonKey, iv);
-	retimg.baseImage = img.baseImage("image/bmp");
+	retimg.baseImage(img.baseImage("image/bmp"), "image/bmp");
 	foreach (idx; 0..img.getSecretItemCount())
 		retimg.addSecretItem(img.getDecryptedItem(idx));
 	retimg.metadata = img.metadata;

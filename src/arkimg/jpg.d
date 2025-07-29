@@ -168,7 +168,8 @@ private:
 	void _importBmpBaseImage(in ubyte[] binary) @trusted
 	{
 		import libjpeg.turbojpeg;
-		auto bmpimg = createBitmap(binary);
+		auto bmpimgSrc = createBitmap(binary);
+		auto bmpimg = bmpimgSrc.channels == 4 ? bmpimgSrc.alphaBrend(0xFFFFFF) : bmpimgSrc;
 		auto bmpsize = bmpimg.size;
 		auto h = bmpsize.height < 0 ? -bmpsize.height : bmpsize.height;
 		auto w = bmpsize.width;

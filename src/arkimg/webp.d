@@ -158,7 +158,8 @@ private:
 	{
 		import webp.encode;
 		import core.stdc.stdlib: WebPFree = free;
-		auto bmpimg = createBitmap(binary.dup);
+		auto bmpimgSrc = createBitmap(binary.dup);
+		auto bmpimg = bmpimgSrc.channels == 4 ? bmpimgSrc.alphaBrend(0xFFFFFF) : bmpimgSrc;
 		auto bmpsize = bmpimg.size,
 			h = bmpsize.height,
 			w = bmpsize.width;

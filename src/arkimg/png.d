@@ -144,10 +144,10 @@ private:
 				auto row = bmp.row(h - y - 1);
 				foreach (x; 0 .. w)
 				{
-					bmpRow[x * 3 + 0] = row[x * 3 + 2]; // R→B
-					bmpRow[x * 3 + 1] = row[x * 3 + 1]; // G→G
-					bmpRow[x * 3 + 2] = row[x * 3 + 0]; // B→R
-					bmpRow[x * 4 + 3] = row[x * 4 + 0]; // A→A
+					bmpRow[x * 4 + 0] = row[x * 4 + 2]; // R→B
+					bmpRow[x * 4 + 1] = row[x * 4 + 1]; // G→G
+					bmpRow[x * 4 + 2] = row[x * 4 + 0]; // B→R
+					bmpRow[x * 4 + 3] = row[x * 4 + 3]; // A→A
 				}
 				png_write_row(pngPtrWrite, bmpRow.ptr);
 			}
@@ -157,6 +157,82 @@ private:
 		}
 		// IENDチャンクの書き込み
 		png_write_end(pngPtrWrite, infoPtrWrite);
+	}
+	
+	// BMP画像出力
+	immutable(ubyte)[] _exportBmpBaseImage() const @trusted
+	{
+		version (Posix) import core.sys.posix.setjmp;
+		// 入力, 出力
+		auto istrm = MemoryReadStream(_image);
+		
+		// 読み込み用にpng構造体を再初期化
+		auto pngPtr = png_create_read_struct(PNG_LIBPNG_VER_STRING.ptr, null, null, null)
+			.enforce("Error: png_create_read_struct failed.");
+		auto infoPtr = png_create_info_struct(pngPtr);
+		if (!infoPtr)
+		{
+			png_destroy_read_struct(&pngPtr, null, null);
+			throw new Exception("Error: png_create_info_struct failed.");
+		}
+		scope (exit)
+			png_destroy_read_struct(&pngPtr, &infoPtr, null);
+		//version (Posix)
+		//	if (setjmp(png_jmpbuf(pngPtr)))
+		//		return;
+		
+		// メモリから読み込むためのリード関数
+		png_set_read_fn(pngPtr, &istrm, &_fnReadMemory);
+		png_read_info(pngPtr, infoPtr);
+		
+		int width = png_get_image_width(pngPtr, infoPtr);
+		int height = png_get_image_height(pngPtr, infoPtr);
+		auto colorType = png_get_color_type(pngPtr, infoPtr);
+		auto bitDepth = png_get_bit_depth(pngPtr, infoPtr);
+		
+		if (bitDepth == 16)
+			png_set_strip_16(pngPtr);
+		if (colorType == PNG_COLOR_TYPE_PALETTE)
+			png_set_palette_to_rgb(pngPtr);
+		if (colorType == PNG_COLOR_TYPE_GRAY && bitDepth < 8)
+			png_set_expand_gray_1_2_4_to_8(pngPtr);
+		if (png_get_valid(pngPtr, infoPtr, PNG_INFO_tRNS))
+			png_set_tRNS_to_alpha(pngPtr);
+		
+		if (colorType == PNG_COLOR_TYPE_RGB ||
+			colorType == PNG_COLOR_TYPE_GRAY ||
+			colorType == PNG_COLOR_TYPE_PALETTE)
+			png_set_bgr(pngPtr);
+		
+		png_read_update_info(pngPtr, infoPtr);
+		int channels = png_get_channels(pngPtr, infoPtr);
+		auto bmp = createBitmap(BmpSize(width, height), 8, channels);
+		// BMP読み込み
+		if (channels == 3)
+		{
+			foreach (r; 0 .. height)
+			{
+				png_read_row(pngPtr, bmp.row(height - r - 1).ptr, null);
+			}
+		}
+		else
+		{
+			assert(channels == 4);
+			scope row = new ubyte[png_get_rowbytes(pngPtr, infoPtr)];
+			foreach (r; 0..height)
+			{
+				png_read_row(pngPtr, row.ptr, null);
+				auto bmpRow = bmp.row(height - r - 1);
+				foreach (x; 0 .. width)
+				{
+					bmpRow[x * 4 + 0] = row[x * 4 + 2]; // R→B
+					bmpRow[x * 4 + 1] = row[x * 4 + 1]; // G→G
+					bmpRow[x * 4 + 2] = row[x * 4 + 0]; // B→R
+					bmpRow[x * 4 + 3] = row[x * 4 + 3]; // A→A
+				}
+			}
+		}
+		return bmp.fileBuffer.idup;
 	}
 	
 	/***************************************************************************
@@ -236,7 +312,7 @@ private:
 		//version (Posix)
 		//	if (setjmp(png_jmpbuf(pngPtr)))
 		//		return;
-	
+		
 		// 書き込み用にpng構造体を再初期化
 		auto pngPtrWrite = png_create_write_struct(PNG_LIBPNG_VER_STRING.ptr, null, null, null)
 			.enforce("Error: png_create_write_struct failed.");
@@ -358,7 +434,7 @@ public:
 		}
 		else if (mimeType == "image/bmp")
 		{
-			return null;
+			return _exportBmpBaseImage();
 		}
 		else
 		{
