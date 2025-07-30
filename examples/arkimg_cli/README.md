@@ -431,7 +431,7 @@ arkimg edit -i input.png -s secret.txt -o output.png --comment "New comment" -k=
 ```
 
 
-## keyutil Subcommand
+## `keyutil` Subcommand
 
 The `keyutil` subcommand is used to generate and manage keys for encryption, decryption, signing, and verification.
 You can generate AES common keys, random IV, Ed25519 verifying/signing private/public key pairs, and output them in various formats including Base64 or parameter specs.

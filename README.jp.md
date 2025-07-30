@@ -227,7 +227,7 @@ arkimg encrypt -i input.png -s secret.png -o encrypted.png -k <key>
 
 # 埋め込んだファイルを抽出(ファイル指定)
 # encrypted.png の画像に含まれる secret.png ファイルを復号して decrypted.png に保存
-arkimg encrypt -i encrypted.png -s secret.png -o decrypted.png -k <key>
+arkimg decrypt -i encrypted.png -s secret.png -o decrypted.png -k <key>
 
 # ファイルを画像に埋め込む(ディレクトリの中身全部)
 # input.png の画像に secretdir 内に含まれる全ファイルを暗号化して埋め込み encrypted.png に保存
