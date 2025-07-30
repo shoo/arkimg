@@ -44,7 +44,7 @@ int dispFallbackHelp(string exePath, string cmdName, GetoptResult result, string
 /// ditto
 int dispLicenseInfo(string exePath)
 {
-	import std.stdio, std.path, std.algorithm, std.range, std.conv, std.regex;
+	import std.stdio, std.path, std.algorithm, std.range, std.conv, std.regex, std.string;
 	writefln("ArkImg, the secret data image archiver. %s", versionInfo);
 	writeln("Copyright 2025 SHOO");
 	writeln();
@@ -52,10 +52,6 @@ int dispLicenseInfo(string exePath)
 		? "https://github.com/shoo/arkimg/blob/main/LICENSE"
 		: "https://github.com/shoo/arkimg/blob/" ~ versionInfo.replaceFirst(regex(`-\d+-g[0-9a-f]+$`), "") ~ "/LICENSE";
 	writefln("ArkImg: BSL-1.0 - %s", myLicense);
-	writeln("libpng (Deimos): BSL-1.0 - https://github.com/D-Programming-Deimos/libpng/master/dub.json");
-	writeln("libpng: zlib/libpng - https://libpng.org/pub/png/src/libpng-LICENSE.txt");
-	writeln("openssl-static: Apache-2.0 - https://github.com/bildhuus/deimos-openssl-static/blob/master/dub.sdl");
-	writeln("openssl (Deimos): OpenSSL or SSLeay - https://github.com/D-Programming-Deimos/openssl/blob/master/dub.sdl");
-	writeln("OpenSSL: Apache-2.0 - https://github.com/openssl/openssl/blob/master/LICENSE.txt");
+	writeln(import("licenses").chomp);
 	return 0;
 }

@@ -6,6 +6,7 @@ import std.string, std.regex;
 
 void main()
 {
+	auto viewDir = __FILE_FULL_PATH__.dirName.dirName.absolutePath().buildPath("views");
 	auto result = execute(["git", "describe", "--tags"]);
 	string versionInfo;
 	if (result.status != 0)
@@ -17,6 +18,6 @@ void main()
 	{
 		versionInfo = result.output.chomp;
 	}
-	if (!"views/version".exists || "views/version".readText().chomp != versionInfo)
-		std.file.write(buildPath("views", "version"), versionInfo);
+	if (!viewDir.buildPath("version").exists || viewDir.buildPath("version").readText().chomp != versionInfo)
+		std.file.write(viewDir.buildPath("version"), versionInfo);
 }

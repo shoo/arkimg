@@ -1,0 +1,5 @@
+libpng (Deimos): BSL-1.0 - https://github.com/D-Programming-Deimos/libpng/master/dub.json
+libpng: zlib/libpng - https://libpng.org/pub/png/src/libpng-LICENSE.txt
+openssl-static: Apache-2.0 - https://github.com/bildhuus/deimos-openssl-static/blob/master/dub.sdl
+openssl (Deimos): OpenSSL or SSLeay - https://github.com/D-Programming-Deimos/openssl/blob/master/dub.sdl
+OpenSSL: Apache-2.0 - https://github.com/openssl/openssl/blob/master/LICENSE.txt
