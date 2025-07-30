@@ -534,25 +534,38 @@ void createArchive()
 		return;
 	auto archiveName = format!"%s-%s-%s-%s%s"(
 		config.projectName, config.refName, config.os, config.arch, config.archiveSuffix);
+	auto docArchiveName = format!"docs%s"(config.archiveSuffix);
 	scope (success)
-		writeln("::set-output name=ARCNAME::", archiveName);
+	{
+		if (archiveName.exists)
+			writeln("::set-output name=ARCNAME::", archiveName);
+		if (docArchiveName.exists)
+			writeln("::set-output name=DOCARCNAME::", docArchiveName);
+	}
 	version (Windows)
 	{
 		auto zip = new ZipArchive;
+		void addZip(string file, string base = getcwd())
+		{
+			auto m = new ArchiveMember;
+			m.expandedData = cast(ubyte[])std.file.read(file);
+			m.name = file.absolutePath.relativePath(base.absolutePath);
+			m.time = file.timeLastModified();
+			m.fileAttributes = file.getAttributes();
+			m.compressionMethod = CompressionMethod.deflate;
+			zip.addMember(m);
+		}
 		foreach (de; dirEntries("examples/arkimg_cli/build", SpanMode.depth))
 		{
 			if (de.isDir)
 				continue;
 			if (de.name.baseName.matchFirst(regex("-test-")) || de.name.extension == ".pdb")
 				continue;
-			auto m = new ArchiveMember;
-			m.expandedData = cast(ubyte[])std.file.read(de.name);
-			m.name = de.name.absolutePath.relativePath(absolutePath("examples/arkimg_cli/build"));
-			m.time = de.name.timeLastModified();
-			m.fileAttributes = de.name.getAttributes();
-			m.compressionMethod = CompressionMethod.deflate;
-			zip.addMember(m);
+			addZip(de.name, "examples/arkimg_cli/build");
 		}
+		addZip("examples/arkimg_cli/README.md", "examples/arkimg_cli");
+		addZip("examples/arkimg_cli/README.jp.md", "examples/arkimg_cli");
+		addZip("LICENSE");
 		std.file.write(archiveName, zip.build());
 	}
 	else
@@ -570,9 +583,14 @@ void createArchive()
 			std.file.rename(from, to);
 		}
 		mv("examples/arkimg_cli/build/arkimg", "archive-tmp/bin/arkimg");
+		mv("examples/arkimg_cli/LICENSE.md", "archive-tmp/LICENSE.md");
 		exec(["tar", "cvfz", buildPath("..", archiveName), "-C", "."]
 			~ dirEntries("archive-tmp", "*", SpanMode.shallow)
 				.map!(de => abs(de.name, "archive-tmp")).array, "archive-tmp");
+		if ("docs".exists)
+			exec(["tar", "cvfz", buildPath("..", docArchiveName), "-C", "."]
+				~ dirEntries("docs", "*", SpanMode.shallow)
+					.map!(de => abs(de.name, "docs")).array, "docs");
 	}
 }
 

@@ -3,11 +3,13 @@ module src.misc;
 import std.json;
 import std.datetime;
 import arkimg;
+import std.string;
+
+enum string versionInfo = import("version").chomp;
 
 ///
 string toHexString(immutable(ubyte)[] binary)
 {
-	import std.string;
 	return format("%(%02X%)", binary);
 }
 
@@ -15,7 +17,7 @@ string toHexString(immutable(ubyte)[] binary)
 void loadParameter(string parameter,
 	out immutable(ubyte)[] key, out immutable(ubyte)[] iv, out immutable(ubyte)[] pubkey)
 {
-	import std.algorithm, std.range, std.array, std.ascii, std.base64, std.conv, std.string, std.regex, std.exception;
+	import std.algorithm, std.range, std.array, std.ascii, std.base64, std.conv, std.regex, std.exception;
 	if (parameter.length == 0)
 		return;
 	if (auto m = parameter.matchFirst(regex(r"^([0-9a-zA-Z-_]{22}|[0-9a-zA-Z-_]{32}|[0-9a-zA-Z-_]{43})$")))
@@ -85,7 +87,7 @@ void loadParameter(string parameter,
 ///
 immutable(ubyte)[] loadCommonKey(string key)
 {
-	import std.file, std.algorithm, std.range, std.array, std.ascii, std.base64, std.conv, std.string;
+	import std.file, std.algorithm, std.range, std.array, std.ascii, std.base64, std.conv;
 	if (key.length == 0)
 		return null;
 	if (key.exists)
@@ -128,7 +130,7 @@ immutable(ubyte)[] loadCommonKey(string key)
 ///
 immutable(ubyte)[] loadIV(string iv)
 {
-	import std.file, std.algorithm, std.range, std.array, std.ascii, std.base64, std.conv, std.string;
+	import std.file, std.algorithm, std.range, std.array, std.ascii, std.base64, std.conv;
 	if (iv.length == 0)
 		return null;
 	if (iv.exists)

@@ -6,6 +6,7 @@ import std.file;
 import std.string;
 import std.conv;
 import std.path;
+import std.regex;
 
 void main()
 {
@@ -17,10 +18,18 @@ void main()
 	enum prvkey = "D047E070E48DE4DC11E639E8F44ED393740AD95217750F1410896C2A6A639CBE";
 	enum pubkey = "BEE58C62F18257EFDFEBD311832AD05B3F26706DB32ECF49F99CCDC0D130F110";
 	auto env    = ["ARKIMG_CLI_KEY": key, "ARKIMG_CLI_PRIVATE_KEY": prvkey, "ARKIMG_CLI_PUBLIC_KEY": pubkey];
+	// Version
+	auto versionInfo = std.file.readText("../views/version").chomp;
+	auto tagName = versionInfo.replaceFirst(regex(`-\d+-g[0-9a-f]+$`), "");
+	auto myLicense = versionInfo.startsWith("v0.0.0")
+		? "https://github.com/shoo/arkimg/blob/main/LICENSE"
+		: "https://github.com/shoo/arkimg/blob/" ~ tagName ~ "/LICENSE";
+	
 	// 通常実行
 	auto result = execArkimgCli(["-h"], env: env);
 	assert(result.compareStrings(i`
-		$(exeBaseName) <CMD> <OPTIONS>
+		ArkImg, the secret data image archiver. $(versionInfo)
+		USAGE: $(exeBaseName) <CMD> <OPTIONS>
 		
 		<CMD>:
 		      archive a | Archive secret files to arkimg.
@@ -31,6 +40,8 @@ void main()
 		      remove rm | Delete file from arkimg including.
 		           edit | Edit file information of arkimg including.
 		        keyutil | Make keys.
+		  -h     --help | Help messages.
+		      --license | Display license information.
 		`));
 	
 	// 引数なしで実行→エラー
@@ -40,7 +51,8 @@ void main()
 	else
 		enum errCode = "255";
 	assert(result.compareStrings(i`
-		$(exeBaseName) <CMD> <OPTIONS>
+		ArkImg, the secret data image archiver. $(versionInfo)
+		USAGE: $(exeBaseName) <CMD> <OPTIONS>
 		
 		<CMD>:
 		      archive a | Archive secret files to arkimg.
@@ -51,13 +63,16 @@ void main()
 		      remove rm | Delete file from arkimg including.
 		           edit | Edit file information of arkimg including.
 		        keyutil | Make keys.
+		  -h     --help | Help messages.
+		      --license | Display license information.
 		Error Program exited with code $(errCode)
 		`));
 	
 	// archive のヘルプ
 	result = execArkimgCli(["a", "-h"], env: env);
 	assert(result.compareStrings(i`
-		$(exeBaseName) a <OPTIONS>
+		ArkImg, the secret data image archiver. $(versionInfo)
+		USAGE: $(exeBaseName) a <OPTIONS>
 		
 		Archive files to arkimg.
 		ex) $(exeBaseName) a -i input.png -o output.png -s=secret.txt -k=$(key) --prvkey=$(prvkey)
@@ -85,7 +100,8 @@ void main()
 	// extract のヘルプ
 	result = execArkimgCli(["x", "-h"], env: env);
 	assert(result.compareStrings(i`
-		$(exeBaseName) x <OPTIONS>
+		ArkImg, the secret data image archiver. $(versionInfo)
+		USAGE: $(exeBaseName) x <OPTIONS>
 		
 		Extract and decrypt files from arkimg.
 		ex) $(exeBaseName) x -i input.png -o output.png -s=secret.txt -k=$(key) --pubkey=$(pubkey)
@@ -112,7 +128,8 @@ void main()
 	// encrypt のヘルプ
 	result = execArkimgCli(["e", "-h"], env: env);
 	assert(result.compareStrings(i`
-		$(exeBaseName) e <OPTIONS>
+		ArkImg, the secret data image archiver. $(versionInfo)
+		USAGE: $(exeBaseName) e <OPTIONS>
 		
 		Encrypt and add file into arkimg.
 		ex) $(exeBaseName) e -i input.png -o output.png -s=secret.txt -k=$(key) --prvkey=$(prvkey)
@@ -140,7 +157,8 @@ void main()
 	// decrypt のヘルプ
 	result = execArkimgCli(["d", "-h"], env: env);
 	assert(result.compareStrings(i`
-		$(exeBaseName) d <OPTIONS>
+		ArkImg, the secret data image archiver. $(versionInfo)
+		USAGE: $(exeBaseName) d <OPTIONS>
 		
 		Decrypt files to arkimg.
 		ex) $(exeBaseName) d -i input.png -o output.png -s=secret.txt -k=$(key) --pubkey=$(pubkey)
@@ -168,7 +186,8 @@ void main()
 	// list のヘルプ
 	result = execArkimgCli(["ls", "-h"], env: env);
 	assert(result.compareStrings(i`
-		$(exeBaseName) ls <OPTIONS>
+		ArkImg, the secret data image archiver. $(versionInfo)
+		USAGE: $(exeBaseName) ls <OPTIONS>
 		
 		List files arkimg including.
 		ex) $(exeBaseName) ls -i input.png -k=$(key) --pubkey=$(pubkey)
@@ -200,7 +219,8 @@ void main()
 	// remove のヘルプ
 	result = execArkimgCli(["rm", "-h"], env: env);
 	assert(result.compareStrings(i`
-		$(exeBaseName) rm <OPTIONS>
+		ArkImg, the secret data image archiver. $(versionInfo)
+		USAGE: $(exeBaseName) rm <OPTIONS>
 		
 		Edit files of arkimg.
 		$(exeBaseName) rm -i input.png -o output.png -s=secret.txt -k=$(key) --prvkey=$(prvkey)
@@ -227,7 +247,8 @@ void main()
 	// edit のヘルプ
 	result = execArkimgCli(["edit", "-h"], env: env);
 	assert(result.compareStrings(i`
-		$(exeBaseName) edit <OPTIONS>
+		ArkImg, the secret data image archiver. $(versionInfo)
+		USAGE: $(exeBaseName) edit <OPTIONS>
 		
 		Edit files of arkimg.
 		$(exeBaseName) edit -i input.png -o output.png -s=secret.txt -k=$(key) --prvkey=$(prvkey)
@@ -261,7 +282,8 @@ void main()
 	// keyutil のヘルプ
 	result = execArkimgCli(["keyutil", "-h"], env: env);
 	assert(result.compareStrings(i`
-		$(exeBaseName) keyutil <OPTIONS>
+		ArkImg, the secret data image archiver. $(versionInfo)
+		USAGE: $(exeBaseName) keyutil <OPTIONS>
 		
 		Key utilities.
 		ex) $(exeBaseName) keyutil --genkey --geniv --genprvkey --genpubkey
@@ -285,6 +307,20 @@ void main()
 		    --parameter |   Generate keys with parameter specs format.
 		 -v   --verbose |   Display verbose messages.
 		 -h      --help |   This help information.
+		`));
+	
+	// keyutil のヘルプ
+	result = execArkimgCli(["--license"], env: env);
+	assert(result.compareStrings(i`
+		ArkImg, the secret data image archiver. $(versionInfo)
+		Copyright 2025 SHOO
+		
+		ArkImg: BSL-1.0 - $(myLicense)
+		libpng (Deimos): BSL-1.0 - https://github.com/D-Programming-Deimos/libpng/master/dub.json
+		libpng: zlib/libpng - https://libpng.org/pub/png/src/libpng-LICENSE.txt
+		openssl-static: Apache-2.0 - https://github.com/bildhuus/deimos-openssl-static/blob/master/dub.sdl
+		openssl (Deimos): OpenSSL or SSLeay - https://github.com/D-Programming-Deimos/openssl/blob/master/dub.sdl
+		OpenSSL: Apache-2.0 - https://github.com/openssl/openssl/blob/master/LICENSE.txt
 		`));
 }
 

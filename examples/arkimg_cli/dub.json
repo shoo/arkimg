@@ -11,5 +11,6 @@
 	"buildTypes": {
 		"vscode-debug": { "buildOptions": ["debugMode", "debugInfoC", "unittests"] },
 		"vscode-debug-cov": { "buildOptions": ["debugMode", "coverage", "debugInfoC", "unittests"] }
-	}
+	},
+	"preBuildCommands": ["rdmd scripts/prebuild.d"]
 }
