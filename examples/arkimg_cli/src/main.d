@@ -53,6 +53,8 @@ int main(string[] args)
 			tuple("remove rm",     "Delete file from arkimg including."),
 			tuple("edit",          "Edit file information of arkimg including."),
 			tuple("keyutil",       "Make keys."),
+			tuple("-h     --help", "Help messages."),
+			tuple("--license",     "Display license information."),
 			])
 		{
 			app.formattedWrite("\n%15s | %s", t[0], t[1]);
@@ -94,6 +96,8 @@ int main(string[] args)
 		return removeCommand(cmdArgs);
 	case "keyutil":
 		return keyutilCommand(cmdArgs);
+	case "--license":
+		return dispLicenseInfo(args[0].baseName.stripExtension);
 	default:
 		return dispDefaultHelp(true);
 	}

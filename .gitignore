@@ -17,6 +17,8 @@
 *.ps1
 docs
 
+**/views/version
+
 arkimg-test-*
 arkimg-cli-test-*
 
