@@ -14,7 +14,7 @@ static:
 	
 	/// テスト対象にするサブパッケージを指定します。
 	/// サブパッケージが追加されたらここにも追加してください。
-	immutable string[] subPkgs = [];
+	immutable string[] subPkgs = ["arkimg-cli"];
 }
 
 ///
@@ -207,8 +207,15 @@ void createReleaseBuild(string[] exDubOpts = null)
 	exec(["dub",
 		"build",
 		"-a",              config.hostArch,
-		"-b=unittest-cov",
+		"-b=release",
 		"--compiler",      config.hostCompiler] ~ exDubOpts);
+	foreach (subpkg; Defines.subPkgs)
+		exec(["dub",
+			"build",
+			":" ~ subpkg,
+			"-a",              config.hostArch,
+			"-b=release",
+			"--compiler",      config.hostCompiler] ~ exDubOpts);
 }
 
 
@@ -455,7 +462,7 @@ void integrationTest(string[] exDubOpts = null)
 		{
 			// ターゲット指定がある場合は、ターゲット指定されている場合だけ実行
 			if (config.integrationTestTargets.length > 0
-				&& !config.integrationTestTargets.canFind("::" ~ pkgName))
+				&& !config.integrationTestTargets.canFind(":" ~ pkgName))
 				continue;
 			dispLog("INFO", pkgName, "Subpackages test start");
 			auto res = Result(pkgName);

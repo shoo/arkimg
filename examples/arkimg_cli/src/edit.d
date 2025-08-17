@@ -194,7 +194,7 @@ void edit(string arkimgFile, string secretFileName, string replaceFile, string o
 			? replaceFile.timeLastModified : SysTime.init;
 	auto fileDat = replaceFile.length > 0       ? cast(ubyte[])std.file.read(replaceFile) : null;
 	auto name    = newSecretFileName.length > 0 ? newSecretFileName : secretFileName;
-	auto mime    = mimeType.length > 0          ? mimeType : mimeType.mimeType;
+	auto mime    = mimeType.length > 0          ? mimeType : name.mimeType;
 	img.edit(idx, fileDat, mime, name, tim, comment, exData, prvKey);
 	infof("Save %s", outFileName);
 	std.file.write(outFileName, img.save());

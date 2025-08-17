@@ -60,6 +60,7 @@ jobs:
   #      run: rdmd ./.github/workflows/runner.d -a=${ARCH} --mode=integration-test
   #    # BLD:ビルドをする場合は以下を実行
   #    - name: Build tests
+  #      run: rdmd ./.github/workflows/runner.d -a=${ARCH} --mode=release-build
   #      run: dub build -a=${ARCH} -b=release
   #    # DOC:ドキュメント生成をする場合は以下を実行
   #    - name: Generate document tests
@@ -110,7 +111,7 @@ jobs:
       - name: Run integration tests
         run: rdmd ./.github/workflows/runner.d -a=x86 --mode=integration-test
       - name: Build tests
-        run: dub build -a=x86 -b=release
+        run: rdmd ./.github/workflows/runner.d -a=x86 --mode=release-build
 
   # No. OS      ARCH    COMPILER   UT  TT  BLD DOC COV
   #  3. Windows x86     dmd-master x   x   x   x   x
@@ -160,7 +161,7 @@ jobs:
       - name: Run unit tests
         run: rdmd ./.github/workflows/runner.d -a=x86_64 --mode=unit-test
       - name: Build tests
-        run: dub build -a=x86_64 -b=release
+        run: rdmd ./.github/workflows/runner.d -a=x86_64 --mode=release-build
       - name: Generate document tests
         run: rdmd ./.github/workflows/runner.d -a=x86_64 --mode=generate-document
 
@@ -187,7 +188,7 @@ jobs:
       - name: Run integration tests
         run: rdmd ./.github/workflows/runner.d -a=x86_64 --mode=integration-test
       - name: Build tests
-        run: dub build -a=x86_64 -b=release
+        run: rdmd ./.github/workflows/runner.d -a=x86_64 --mode=release-build
 
   # No. OS      ARCH    COMPILER   UT  TT  BLD DOC COV
   #  9. Ubuntu  x86     dmd        x   x   x   x   x
@@ -214,7 +215,7 @@ jobs:
       - name: Run unit tests
         run: rdmd ./.github/workflows/runner.d -a=x86 --mode=unit-test
       - name: Build tests
-        run: dub build -a=x86 -b=release
+        run: rdmd ./.github/workflows/runner.d -a=x86 --mode=release-build
 
   # No. OS      ARCH    COMPILER   UT  TT  BLD DOC COV
   # 11. Ubuntu  x86     dmd-master x   x   x   x   x
@@ -242,7 +243,7 @@ jobs:
       - name: Run unit tests
         run: rdmd ./.github/workflows/runner.d -a=x86_64 --mode=unit-test
       - name: Build tests
-        run: dub build -a=x86_64 -b=release
+        run: rdmd ./.github/workflows/runner.d -a=x86_64 --mode=release-build
       - name: Generate document tests
         run: rdmd ./.github/workflows/runner.d -a=x86_64 --mode=generate-document
       - name: Upload generated pages
@@ -297,7 +298,7 @@ jobs:
       - name: Run integration tests
         run: rdmd ./.github/workflows/runner.d -a=x86_64 --mode=integration-test
       - name: Build tests
-        run: dub build -a=x86_64 -b=release
+        run: rdmd ./.github/workflows/runner.d -a=x86_64 --mode=release-build
 
   # No. OS      ARCH    COMPILER   UT  TT  BLD DOC COV
   # 16. Ubuntu  x86_64  ldc-master x   x   x   x   x
@@ -364,7 +365,7 @@ jobs:
       - name: Run unit tests
         run: rdmd ./.github/workflows/runner.d -a=x86_64 --mode=unit-test
       - name: Build tests
-        run: dub build -a=x86_64 -b=release
+        run: rdmd ./.github/workflows/runner.d -a=x86_64 --mode=release-build
       - name: Generate document tests
         run: rdmd ./.github/workflows/runner.d -a=x86_64 --mode=generate-document
 

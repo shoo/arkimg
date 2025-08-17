@@ -45,7 +45,7 @@ jobs:
         with:
           compiler: ldc-latest
       - name: Build binary
-        run: dub build -a=x86_64 -b=release --root=examples/arkimg_cli
+        run: rdmd ./.github/workflows/runner.d -a=x86_64 --mode=release-build
       - name: Create archive
         id: create_archive
         run: rdmd ./.github/workflows/runner.d -a=x86_64 --mode=create-archive
