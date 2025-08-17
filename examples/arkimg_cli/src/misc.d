@@ -198,7 +198,6 @@ immutable(ubyte)[] loadPrivateKey(string key)
 	enum testDER = cast(immutable(ubyte)[])
 		x"302E020100300506032B657004220420CF9AE7A844F1B3CD0CCF37223C4858A6E5D40E6BA4D1429B12B6B3086261F919";
 	auto prvKey = loadPrivateKey("CF9AE7A844F1B3CD0CCF37223C4858A6E5D40E6BA4D1429B12B6B3086261F919");
-	import std; writefln("%(%02X%)", prvKey);
 	assert(prvKey == testDER);
 	
 	prvKey = loadPrivateKey("z5rnqETxs80MzzciPEhYpuXUDmuk0UKbErazCGJh-Rk");
@@ -252,7 +251,6 @@ immutable(ubyte)[] loadPublicKey(string key)
 	enum testDER = cast(immutable(ubyte)[])
 		x"302A300506032B6570032100B366F7C64464672A9ED3F0D2625807D184444A535094D50D31319A1F06B44FA2";
 	auto prvKey = loadPublicKey("B366F7C64464672A9ED3F0D2625807D184444A535094D50D31319A1F06B44FA2");
-	import std; writefln("%(%02X%)", prvKey);
 	assert(prvKey == testDER);
 	
 	prvKey = loadPublicKey("s2b3xkRkZyqe0_DSYlgH0YRESlNQlNUNMTGaHwa0T6I");
