@@ -12,7 +12,7 @@ void main()
 	if (result.status != 0)
 	{
 		result = execute(["git", "describe", "--tags", "--always"]);
-		versionInfo = "v0.0.0-0-g" ~ result.output.chomp;
+		versionInfo = "v0.0.0-0-g" ~ (result.status != 0 ? "0000000" : result.output.chomp);
 	}
 	else
 	{
