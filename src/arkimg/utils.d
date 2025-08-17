@@ -9,142 +9,101 @@ private import crypto = arkimg._internal.crypto;
  */
 string mimeType(string filename) @safe
 {
-	import std.path, std.string;
-	switch (filename.extension.toLower)
+	import std.path, std.string, std.algorithm, std.array, std.range;
+	struct ExtMap
 	{
-	// 画像
-	case ".png":
-		return "image/png";
-	case ".jpg":
-		return "image/jpeg";
-	case ".webp":
-		return "image/webp";
-	case ".bmp":
-		return "image/bmp";
-	case ".avif":
-		return "image/avif";
-	case ".tif":
-		return "image/tiff";
-	case ".tiff":
-		return "image/tiff";
-	case ".svg":
-		return "image/svg+xml";
-	case ".gif":
-		return "image/gif";
-	case ".ico":
-		return "image/vnd.microsoft.icon";
-	// 圧縮ファイル
-	case ".zip":
-		return "application/zip";
-	case ".tar":
-		return "application/x-tar";
-	case ".bz":
-		return "application/x-bzip";
-	case ".bz2":
-		return "application/x-bzip2";
-	case ".gz":
-		return "application/gzip";
-	case ".7z":
-		return "application/x-7z-compressed";
-	case ".rar":
-		return "application/vnd.rar";
-	case ".pdf":
-		return "application/pdf";
-	// テキスト
-	case ".txt":
-		return "text/plain";
-	case ".html":
-		return "text/html";
-	case ".htm":
-		return "text/html";
-	case ".xml":
-		return "text/xml";
-	case ".css":
-		return "text/css";
-	case ".js":
-		return "text/javascript";
-	case ".json":
-		return "application/json";
-	case ".cbor":
-		return "application/cbor";
-	case ".c":
-		return "text/x-csrc";
-	case ".h":
-		return "text/x-chdr";
-	case ".cpp":
-		return "text/x-c++src";
-	case ".hpp":
-		return "text/x-c++hdr";
-	case ".py":
-		return "text/x-python";
-	case ".d":
-		return "text/x-dsrc";
-	case ".di":
-		return "text/x-dsrc";
-	case ".rs":
-		return "text/x-rustsrc";
-	case ".sh":
-		return "application/x-shellscript";
-	case ".bat":
-		return "application/x-bat";
-	case ".ps1":
-		return "application/x-powershell";
-	// 音声
-	case ".aac":
-		return "audio/aac";
-	case ".mp3":
-		return "audio/mpeg";
-	case ".ogg":
-		return "audio/ogg";
-	case ".oga":
-		return "audio/ogg";
-	case ".mka":
-		return "audio/x-matroska";
-	case ".flac":
-		return "audio/x-flac";
-	case ".wav":
-		return "audio/x-wav";
-	// 動画
-	case ".avi":
-		return "video/x-msvideo";
-	case ".ogv":
-		return "video/ogg";
-	case ".mp4":
-		return "video/mp4";
-	case ".mpg":
-		return "video/mpeg";
-	case ".mpeg":
-		return "video/mpeg";
-	case ".webm":
-		return "video/webm";
-	case ".ts":
-		return "video/mp2t";
-	case ".mkv":
-		return "video/x-matroska";
-	// その他
-	case ".pt":
-		return "application/x-pytorch";
-	case ".safetensors":
-		return "application/x-safetensors";
-	case ".gguf":
-		return "application/x-gguf";
-	case ".onnx":
-		return "application/x-onnx";
-	case ".ppt":
-		return "application/vnd.ms-powerpoint";
-	case ".pptx":
-		return "application/vnd.openxmlformats-officedocument.presentationml.presentation";
-	case ".doc":
-		return "application/msword";
-	case ".docx":
-		return "application/vnd.openxmlformats-officedocument.wordprocessingml.document";
-	case ".xls":
-		return "application/vnd.ms-excel";
-	case ".xlsx":
-		return "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet";
-	default:
-		return null;
+		string ext;
+		string mime;
 	}
+	static immutable ExtMap[] maplut = [
+		// 画像
+		ExtMap("png", "image/png"),
+		ExtMap("jpg", "image/jpeg"),
+		ExtMap("webp", "image/webp"),
+		ExtMap("bmp", "image/bmp"),
+		ExtMap("avif", "image/avif"),
+		ExtMap("tif", "image/tiff"),
+		ExtMap("tiff", "image/tiff"),
+		ExtMap("svg", "image/svg+xml"),
+		ExtMap("gif", "image/gif"),
+		ExtMap("ico", "image/vnd.microsoft.icon"),
+		// 圧縮ファイル
+		ExtMap("zip", "application/zip"),
+		ExtMap("tar", "application/x-tar"),
+		ExtMap("bz", "application/x-bzip"),
+		ExtMap("bz2", "application/x-bzip2"),
+		ExtMap("gz", "application/gzip"),
+		ExtMap("7z", "application/x-7z-compressed"),
+		ExtMap("rar", "application/vnd.rar"),
+		ExtMap("pdf", "application/pdf"),
+		// テキスト
+		ExtMap("txt", "text/plain"),
+		ExtMap("html", "text/html"),
+		ExtMap("htm", "text/html"),
+		ExtMap("xml", "text/xml"),
+		ExtMap("css", "text/css"),
+		ExtMap("js", "text/javascript"),
+		ExtMap("jsx", "text/javascript"),
+		ExtMap("json", "application/json"),
+		ExtMap("c", "text/x-csrc"),
+		ExtMap("h", "text/x-chdr"),
+		ExtMap("cpp", "text/x-c++src"),
+		ExtMap("hpp", "text/x-c++hdr"),
+		ExtMap("py", "text/x-python"),
+		ExtMap("d", "text/x-dsrc"),
+		ExtMap("di", "text/x-dsrc"),
+		ExtMap("rs", "text/x-rustsrc"),
+		ExtMap("ts", "text/typescript"),
+		ExtMap("tsx", "text/typescript"),
+		ExtMap("sh", "application/x-shellscript"),
+		ExtMap("bat", "application/x-bat"),
+		ExtMap("ps1", "application/x-powershell"),
+		ExtMap("md", "text/markdown"),
+		ExtMap("markdown", "text/markdown"),
+		ExtMap("yml", "text/yaml"),
+		ExtMap("yaml", "text/yaml"),
+		ExtMap("toml", "text/toml"),
+		ExtMap("csv", "text/csv"),
+		ExtMap("tsv", "text/tab-separated-values"),
+		// 音声
+		ExtMap("aac", "audio/aac"),
+		ExtMap("mp3", "audio/mpeg"),
+		ExtMap("ogg", "audio/ogg"),
+		ExtMap("oga", "audio/ogg"),
+		ExtMap("mka", "audio/x-matroska"),
+		ExtMap("flac", "audio/x-flac"),
+		ExtMap("wav", "audio/x-wav"),
+		// 動画
+		ExtMap("avi", "video/x-msvideo"),
+		ExtMap("ogv", "video/ogg"),
+		ExtMap("mp4", "video/mp4"),
+		ExtMap("mpg", "video/mpeg"),
+		ExtMap("mpeg", "video/mpeg"),
+		ExtMap("webm", "video/webm"),
+		//ExtMap("ts", "video/mp2t"), // TypeScript is prioritized
+		ExtMap("mkv", "video/x-matroska"),
+		// その他
+		ExtMap("cbor", "application/cbor"),
+		ExtMap("pt", "application/x-pytorch"),
+		ExtMap("safetensors", "application/x-safetensors"),
+		ExtMap("gguf", "application/x-gguf"),
+		ExtMap("onnx", "application/x-onnx"),
+		ExtMap("ppt", "application/vnd.ms-powerpoint"),
+		ExtMap("pptx", "application/vnd.openxmlformats-officedocument.presentationml.presentation"),
+		ExtMap("doc", "application/msword"),
+		ExtMap("docx", "application/vnd.openxmlformats-officedocument.wordprocessingml.document"),
+		ExtMap("xls", "application/vnd.ms-excel"),
+		ExtMap("xlsx", "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"),
+	].sort!((a, b) => a.ext < b.ext).array.idup;
+	static immutable extmap = maplut.map!(a => a.ext).array;
+	static immutable mimemap = maplut.map!(a => a.mime).array;
+	auto fext = filename.extension.toLower();
+	if (fext.length == 0 || fext[0] != '.')
+		return "application/octet-stream";
+	auto found = find(extmap.assumeSorted(), fext[1..$]);
+	if (found.empty)
+		return "application/octet-stream";
+	return mimemap[$ - found.length];
 }
 
 @safe unittest
@@ -217,9 +176,11 @@ string mimeType(string filename) @safe
 		Dat("test.docx",        "application/vnd.openxmlformats-officedocument.wordprocessingml.document"),
 		Dat("test.xls",         "application/vnd.ms-excel"),
 		Dat("test.xlsx",        "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"),
+		Dat("xxx",              "application/octet-stream"),
+		Dat("xxx.aaa",          "application/octet-stream"),
 	])
 	{
-		assert(dat.file.mimeType == dat.mime);
+		assert(dat.file.mimeType == dat.mime, dat.file ~ " and " ~ dat.file.mimeType ~ " is unmatched.");
 	}
 }
 
