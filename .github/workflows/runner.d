@@ -573,6 +573,15 @@ void createArchive()
 		addZip("examples/arkimg_cli/README.md", "examples/arkimg_cli");
 		addZip("examples/arkimg_cli/README.jp.md", "examples/arkimg_cli");
 		addZip("LICENSE");
+		if ("docs".exists)
+		{
+			foreach (de; dirEntries("docs", SpanMode.depth))
+			{
+				if (de.isDir)
+					continue;
+				addZip(de.name, "docs");
+			}
+		}
 		std.file.write(archiveName, zip.build());
 	}
 	else
@@ -590,7 +599,9 @@ void createArchive()
 			std.file.rename(from, to);
 		}
 		mv("examples/arkimg_cli/build/arkimg", "archive-tmp/bin/arkimg");
-		mv("examples/arkimg_cli/LICENSE.md", "archive-tmp/LICENSE.md");
+		mv("examples/arkimg_cli/README.md", "archive-tmp/doc/arkimg/README.md");
+		mv("examples/arkimg_cli/README.jp.md", "archive-tmp/doc/arkimg/README.jp.md");
+		mv("LICENSE", "archive-tmp/doc/arkimg/LICENSE");
 		exec(["tar", "cvfz", buildPath("..", archiveName), "-C", "."]
 			~ dirEntries("archive-tmp", "*", SpanMode.shallow)
 				.map!(de => abs(de.name, "archive-tmp")).array, "archive-tmp");

@@ -144,10 +144,17 @@ jobs:
         uses: dlang-community/setup-dlang@v2
         with:
           compiler: ldc-latest
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: 'npm'
+          cache-dependency-path: '.gendoc/package-lock.json'
       - name: Run unit tests
         run: rdmd ./.github/workflows/runner.d -a=x86_64 --mode=unit-test
       - name: Build tests
         run: rdmd ./.github/workflows/runner.d -a=x86_64 --mode=release-build
+      - name: Build webui
+        run: cd .gendoc && npm install && npm run build
       - name: Generate document tests
         run: rdmd ./.github/workflows/runner.d -a=x86_64 --mode=generate-document
 
@@ -220,10 +227,17 @@ jobs:
         uses: dlang-community/setup-dlang@v2
         with:
           compiler: dmd-latest
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: 'npm'
+          cache-dependency-path: '.gendoc/package-lock.json'
       - name: Run unit tests
         run: rdmd ./.github/workflows/runner.d -a=x86_64 --mode=unit-test
       - name: Build tests
         run: rdmd ./.github/workflows/runner.d -a=x86_64 --mode=release-build
+      - name: Build webui
+        run: cd .gendoc && npm ci && npm run build
       - name: Generate document tests
         run: rdmd ./.github/workflows/runner.d -a=x86_64 --mode=generate-document
       - name: Upload generated pages
@@ -245,15 +259,33 @@ jobs:
         uses: dlang-community/setup-dlang@v2
         with:
           compiler: ldc-latest
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: 'npm'
+          cache-dependency-path: '.gendoc/package-lock.json'
       - name: Run unit tests
         run: rdmd ./.github/workflows/runner.d -a=x86_64 --mode=unit-test
       - name: Run integration tests
         run: rdmd ./.github/workflows/runner.d -a=x86_64 --mode=integration-test
+      - name: Run webui unit tests
+        run: |
+          cd .gendoc
+          npm ci
+          npm run test:coverage
+          cd ..
+          rdmd ./.github/workflows/webui_coverage_fix.d --target=.gendoc/coverage/coverage-final.json -o=coverage-webui.json
       - name: Upload coverage result
         uses: actions/upload-artifact@v4
         with:
           name: coverage-linux
           path: .cov
+          include-hidden-files: true
+      - name: Upload coverage result
+        uses: actions/upload-artifact@v4
+        with:
+          name: coverage-webui
+          path: ./coverage-webui.json
           include-hidden-files: true
 
   # No. OS      ARCH    COMPILER   UT  TT  BLD DOC COV
@@ -334,10 +366,17 @@ jobs:
         uses: dlang-community/setup-dlang@v2
         with:
           compiler: ldc-latest
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: 'npm'
+          cache-dependency-path: '.gendoc/package-lock.json'
       - name: Run unit tests
         run: rdmd ./.github/workflows/runner.d -a=x86_64 --mode=unit-test
       - name: Build tests
         run: rdmd ./.github/workflows/runner.d -a=x86_64 --mode=release-build
+      - name: Build webui
+        run: cd .gendoc && npm install && npm run build
       - name: Generate document tests
         run: rdmd ./.github/workflows/runner.d -a=x86_64 --mode=generate-document
 
@@ -377,3 +416,11 @@ jobs:
           path: coverage-macos13
       - name: Upload coverage to Codecov
         run: bash <(curl -s https://codecov.io/bash) -t ${{ secrets.CODECOV_TOKEN }} -s coverage-macos13
+      - name: Download coverage result
+        uses: actions/download-artifact@v4
+        with:
+          name: coverage-webui
+          path: coverage-webui.json
+      - name: Upload coverage to Codecov
+        run: bash <(curl -s https://codecov.io/bash) -t ${{ secrets.CODECOV_TOKEN }} -s coverage-webui.json
+
