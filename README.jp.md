@@ -5,7 +5,7 @@
 [![BSL-1.0](http://img.shields.io/badge/license-BSL--1.0-blue.svg?style=flat)](./LICENSE)
 [![codecov](https://codecov.io/gh/shoo/arkimg/branch/main/graph/badge.svg)](https://codecov.io/gh/shoo/arkimg)
 [![Document](http://img.shields.io/badge/API_Document-purple.svg?style=flat)](https://shoo.github.io/arkimg)
-[![WebUI](http://img.shields.io/badge/WebUI-green.svg?style=flat)](./LICENSE)
+[![WebUI](http://img.shields.io/badge/WebUI-green.svg?style=flat)](https://shoo.github.io/arkimg/webui.html)
 
 ArkImgは、画像ファイル（PNG, JPEG, BMP, WebP）内に暗号化したデータを埋め込むことができるライブラリです。  
 秘密情報やファイルを画像に隠蔽し、安全に保存・転送する用途に利用できます。
