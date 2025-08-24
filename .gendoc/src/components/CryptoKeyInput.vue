@@ -75,11 +75,11 @@ const validatePublicKey = (key: string) => {
   }
   try {
     const keyBytes = decodeKeyInfo(key);
-    if (keyBytes.length != 64) {
-      return '公開鍵長は512bit(64Byte)である必要があります';
+    if (keyBytes.length != 32) {
+      return '公開鍵長は256bit(32Byte)である必要があります';
     }
   } catch (e) {
-    return '公開鍵はEd25519のRaw形式で64バイトのものをBase64またはHexDecimalで指定してください';
+    return '公開鍵はEd25519のRaw形式で32バイトのものをBase64またはHexDecimalで指定してください';
   }
   return '';
 }
@@ -128,7 +128,7 @@ const generateAesKey = async () => {
   const key = await createRandomKey(16);
   aesKeyInput.value = encodeBase64URLNoPadding(key);
   updateAesKey();
-  notificationManager.notify('AES鍵を生成しました', 'success');
+  notificationManager.notify('共通鍵を生成しました', 'success');
 }
 
 watch(() => cryptoContext.key?.value, (newValue) => {
