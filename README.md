@@ -19,6 +19,8 @@ We provide both a command-line interface and a web interface as sample implement
 
 ---
 
+Note: Beware of viruses. Always ensure that the data originates from a trusted source. To verify authenticity, it's recommended to include a digital signature using a private key during data creation. When extracting secret data, verify the signature using the public key of the distribution source.
+
 
 ## Features
 
@@ -97,6 +99,7 @@ Data is included at any position, but usually after the IDAT chunk (image data):
 - eMDt chunk: **Metadata**. 0 or 1 per file.
 
 Note: Some browsers or viewers may not be able to handle PNG images with chunks after the IDAT chunk.
+*PNG custom chunk handling:* eDAt and eMDt chunks are treated as PNG custom chunks. Some viewers may not support PNG files with custom chunks after IDAT.
 
 ### JPG
 Data is included after the EOI (end marker) in the following structure:
@@ -105,8 +108,8 @@ Data is included after the EOI (end marker) in the following structure:
 `[Encrypted Chunk]`: `[Type: 4 bytes] | [Length: 4 bytes] | [Data: N bytes]`
 
 - Encrypted chunk: multiple
-  - Signature: 4 bytes
-  - Data length: 4 bytes LittleEndian unsigned 32-bit integer
+  - Signature: 4 bytes (LittleEndian)
+  - Data length: 4 bytes LittleEndian unsigned 32-bit integer (number of bytes in data N)
   - Data: N bytes
 
 There may be multiple encrypted chunks.
@@ -114,7 +117,9 @@ Each encrypted chunk contains a signature, a data length, and variable-length da
 - Signature `['E', 'D', 'A', 'T']`: Data is **encrypted data body**. There may be multiple per file. 4 bytes: [0x45, 0x44, 0x41, 0x54] as "EDAT" in ASCII codes.
 - Signature `['E', 'M', 'D', 'T']`: Data is **metadata**. 0 or 1 per file. 4 bytes: [0x45, 0x4d, 0x44, 0x54] as "EMDT" in ASCII codes.
 
+
 Note: Some browsers or viewers may not be able to handle JPG images with data after the EOI marker.
+*JPEG chunk handling:* Encrypted chunks are not JPEG segment format. Custom segment format (APPn segment) cannot insert data after EOI, and is limited to 64KB, so an original chunk format is used. Some viewers may not support JPEG files with data after EOI.
 
 ### BMP
 Data is included after the end of the pixel data specified by the image size in the BMP info header, in the following structure:
@@ -124,7 +129,7 @@ Data is included after the end of the pixel data specified by the image size in 
 
 - Encrypted chunk: multiple
   - Signature: 4 bytes
-  - Data length: 4 bytes LittleEndian unsigned 32-bit integer
+  - Data length: 4 bytes LittleEndian unsigned 32-bit integer (number of bytes in data N)
   - Data: N bytes
 
 There may be multiple encrypted chunks.
@@ -133,10 +138,10 @@ Each encrypted chunk contains a signature, a data length, and variable-length da
 - Signature `['E', 'M', 'D', 'T']`: Data is **metadata**. 0 or 1 per file. 4 bytes: [0x45, 0x4d, 0x44, 0x54] as "EMDT" in ASCII codes.
 
 ### WebP
-Data is included after the end of the pixel data specified by the image size in the BMP info header, in the following structure:
+Custom chunks are typically included after the base image pixel data, such as VP8, VP8L, VP8X, ANIM, ANMF, etc., using the following structure:
 - Encrypted chunk: multiple
   - Chunk FourCC: 4 bytes
-  - Chunk size: 4 bytes LittleEndian unsigned 32-bit integer
+  - Chunk size: 4 bytes LittleEndian unsigned 32-bit integer (number of bytes in data N)
   - Payload: N bytes
 
 `[Webp File Header] | [Chunks] | ... | [Encrypted Chunk 1] | [Encrypted Chunk 2] ... ` <br/>
@@ -146,6 +151,8 @@ There may be multiple encrypted chunks.
 Each encrypted chunk contains a FourCC, a chunk size, and variable-length payload.
 - FourCC `['E', 'D', 'A', 'T']`: Data is **encrypted data body**. There may be multiple per file. 4 bytes: [0x45, 0x44, 0x41, 0x54] as "EDAT".
 - FourCC `['E', 'M', 'D', 'T']`: Data is **metadata**. 0 or 1 per file. 4 bytes: [0x45, 0x4d, 0x44, 0x54] as "EMDT".
+
+*WebP custom chunk handling:* EMDT and EDAT chunks are treated as WebP custom chunks.
 
 ### Encrypted Data Body
 Encrypted byte array in one of the following formats:
@@ -233,7 +240,7 @@ arkimg encrypt -i input.png -s secret.png -o encrypted.png -k <key>
 
 # Extract an embedded file (file specified)
 # Decrypt and extract secret.png from encrypted.png, save as decrypted.png
-arkimg encrypt -i encrypted.png -s secret.png -o decrypted.png -k <key>
+arkimg decrypt -i encrypted.png -s secret.png -o decrypted.png -k <key>
 
 # Embed all files in a directory into an image
 # Encrypt and embed all files in secretdir into input.png, save as encrypted.png
