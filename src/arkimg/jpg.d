@@ -99,23 +99,23 @@ private:
 			if (buf.length < 8)
 				break;
 			uint len  = (uint(buf[4]) << 0) | (uint(buf[5]) << 8) | (uint(buf[6]) << 16) | (uint(buf[7]) << 24);
-			if (!(len >= 4 && len < len + 4 && len + 4 <= buf.length))
+			if (len + 8 > buf.length)
 				break;
 			if (buf[0..4] == _chunkFourCcEDAT)
 			{
 				// SecretItem
-				_secretItems ~= SecretItem(EncryptedBinary(buf[8 .. len + 4]));
+				_secretItems ~= SecretItem(EncryptedBinary(buf[8 .. len + 8]));
 			}
 			else if (buf[0..4] == _chunkFourCcEMDT)
 			{
 				// Metadata
-				() @trusted { _metadata = EncryptedBinary(buf[8 .. len + 4]); }();
+				() @trusted { _metadata = EncryptedBinary(buf[8 .. len + 8]); }();
 			}
 			else
 			{
 				// 何もしない
 			}
-			parsePos += 4 + len;
+			parsePos += 4 + 4 + len;
 		}
 	}
 	
@@ -135,8 +135,8 @@ private:
 		
 		if (auto md = _getEncryptedMetadata())
 		{
-			enforce(md.length < uint.max - 4, "A metadata is too long.");
-			uint len = cast(uint)(md.length + 4);
+			enforce(md.length < uint.max, "A metadata is too long.");
+			uint len = cast(uint)md.length;
 			app ~= _chunkFourCcEMDT[];
 			app ~= [ubyte((len & 0x000000FF) >> 0),
 				ubyte((len & 0x000000FF) >> 8),
@@ -146,8 +146,8 @@ private:
 		}
 		foreach (item; _getEncryptedItems())
 		{
-			enforce(item.length < uint.max - 4, "A secret item is too long.");
-			uint len = cast(uint)(item.length + 4);
+			enforce(item.length < uint.max, "A secret item is too long.");
+			uint len = cast(uint)item.length;
 			app ~= _chunkFourCcEDAT[];
 			app ~= [ubyte((len & 0x000000FF) >> 0),
 				ubyte((len & 0x0000FF00) >> 8),
