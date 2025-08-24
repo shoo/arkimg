@@ -147,10 +147,17 @@ jobs:
         uses: dlang-community/setup-dlang@v2
         with:
           compiler: ldc-latest
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: 'npm'
+          cache-dependency-path: '.gendoc/package-lock.json'
       - name: Run unit tests
         run: rdmd ./.github/workflows/runner.d -a=x86_64 --mode=unit-test
       - name: Build tests
         run: rdmd ./.github/workflows/runner.d -a=x86_64 --mode=release-build
+      - name: Build webui
+        run: cd .gendoc && npm install && npm run build
       - name: Generate document tests
         run: rdmd ./.github/workflows/runner.d -a=x86_64 --mode=generate-document
 
@@ -362,10 +369,17 @@ jobs:
         uses: dlang-community/setup-dlang@v2
         with:
           compiler: ldc-latest
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: 'npm'
+          cache-dependency-path: '.gendoc/package-lock.json'
       - name: Run unit tests
         run: rdmd ./.github/workflows/runner.d -a=x86_64 --mode=unit-test
       - name: Build tests
         run: rdmd ./.github/workflows/runner.d -a=x86_64 --mode=release-build
+      - name: Build webui
+        run: cd .gendoc && npm install && npm run build
       - name: Generate document tests
         run: rdmd ./.github/workflows/runner.d -a=x86_64 --mode=generate-document
 
