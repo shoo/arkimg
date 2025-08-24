@@ -4,9 +4,20 @@
 [![downloads](https://img.shields.io/dub/dt/arkimg.svg?cacheSeconds=3600)](https://code.dlang.org/packages/arkimg)
 [![BSL-1.0](http://img.shields.io/badge/license-BSL--1.0-blue.svg?style=flat)](./LICENSE)
 [![codecov](https://codecov.io/gh/shoo/arkimg/branch/main/graph/badge.svg)](https://codecov.io/gh/shoo/arkimg)
+[![Document](http://img.shields.io/badge/API_Document-purple.svg?style=flat)](https://shoo.github.io/arkimg)
+[![WebUI](http://img.shields.io/badge/WebUI-green.svg?style=flat)](./LICENSE)
 
 ArkImgは、画像ファイル（PNG, JPEG, BMP, WebP）内に暗号化したデータを埋め込むことができるライブラリです。  
 秘密情報やファイルを画像に隠蔽し、安全に保存・転送する用途に利用できます。
+
+ライブラリのサンプルとして付属する形で、コマンドラインインターフェースと、ウェブインターフェースを用意しています。
+
+---
+
+[<img src="./.gendoc/public/icon.svg" width="32" />](https://shoo.github.io/arkimg/webui.html)  
+[Webインターフェースはこちらから](https://shoo.github.io/arkimg/webui.html)
+
+---
 
 ## 特徴
 
@@ -104,7 +115,7 @@ EOI (エンドマーカ)の後に以下の構造でデータを含む。
 - シグネチャ `['E', 'M', 'D', 'T']`: データは **メタデータ** 1つのファイルにつき0個または1つ含まれる。"EMDT"のASCIIコード4桁。先頭から順に`[0x45, 0x4d, 0x44, 0x54]`の4バイト。
 - 暗号化チャンク: 複数
   - シグネチャ: 4 byte
-  - データ長: 4 byte LittleEndian 符号なし64bit整数
+  - データ長: 4 byte LittleEndian 符号なし32bit整数
   - データ: N byte
 
 注意: EOIマーカの後ろにデータが含まれる場合に、JPG画像を取り扱えなくなるブラウザやビューワーなどがある可能性があります。
@@ -117,7 +128,7 @@ BMP情報ヘッダの画像サイズで指定される画素データの末尾�
 
 - 暗号化チャンク: 複数
   - シグネチャ: 4 byte
-  - データ長: 4 byte LittleEndian 符号なし64bit整数
+  - データ長: 4 byte LittleEndian 符号なし32bit整数
   - データ: N byte
 
 暗号化チャンクは複数含まれます。

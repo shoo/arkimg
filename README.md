@@ -4,10 +4,21 @@
 [![downloads](https://img.shields.io/dub/dt/arkimg.svg?cacheSeconds=3600)](https://code.dlang.org/packages/arkimg)
 [![BSL-1.0](http://img.shields.io/badge/license-BSL--1.0-blue.svg?style=flat)](./LICENSE)
 [![codecov](https://codecov.io/gh/shoo/arkimg/branch/main/graph/badge.svg)](https://codecov.io/gh/shoo/arkimg)
-[![Document](http://img.shields.io/badge/license-BSL--1.0-blue.svg?style=flat)](https://shoo.github.io/arkimg)
+[![Document](http://img.shields.io/badge/API_Document-purple.svg?style=flat)](https://shoo.github.io/arkimg)
+[![WebUI](http://img.shields.io/badge/WebUI-green.svg?style=flat)](./LICENSE)
 
 ArkImg is a library that allows you to embed encrypted data into image files (PNG, JPEG, BMP, WebP).
 It can be used to hide and securely store or transfer confidential information or files within images.
+
+We provide both a command-line interface and a web interface as sample implementations included with the library.
+
+---
+
+[<img src="./.gendoc/public/icon.svg" width="32" />](https://shoo.github.io/arkimg/webui.html)  
+[Web interface is here.](https://shoo.github.io/arkimg/webui.html)
+
+---
+
 
 ## Features
 
@@ -95,7 +106,7 @@ Data is included after the EOI (end marker) in the following structure:
 
 - Encrypted chunk: multiple
   - Signature: 4 bytes
-  - Data length: 4 bytes LittleEndian unsigned 64-bit integer
+  - Data length: 4 bytes LittleEndian unsigned 32-bit integer
   - Data: N bytes
 
 There may be multiple encrypted chunks.
@@ -113,7 +124,7 @@ Data is included after the end of the pixel data specified by the image size in 
 
 - Encrypted chunk: multiple
   - Signature: 4 bytes
-  - Data length: 4 bytes LittleEndian unsigned 64-bit integer
+  - Data length: 4 bytes LittleEndian unsigned 32-bit integer
   - Data: N bytes
 
 There may be multiple encrypted chunks.
