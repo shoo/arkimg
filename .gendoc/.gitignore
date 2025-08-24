@@ -25,3 +25,5 @@ coverage
 !tsconfig.*.json
 !package.json
 !package-lock.json
+
+*.local.ts
