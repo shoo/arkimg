@@ -83,7 +83,7 @@ export function loadParameter(parameter: string): { key: Uint8Array, iv?: Uint8A
 	}
 	
 	// 共通鍵/IV/公開鍵の組み合わせ (e.g., k16i16p32-base64string)
-	const encodedKeyInfoMatch = parameter.match(/^(?:k(16|24|32))(?:i(16))?(?:p(32))?-([0-9a-zA-Z-_+])$/);
+	const encodedKeyInfoMatch = parameter.match(/^(?:k(16|24|32))(?:i(16))?(?:p(32))?-([0-9a-zA-Z-_]+)$/);
 	if (encodedKeyInfoMatch) {
 		const bin = decodeBase64URLNoPadding(encodedKeyInfoMatch[4]);
 		const keyLen = encodedKeyInfoMatch[1] ? parseInt(encodedKeyInfoMatch[1], 10) : 0;

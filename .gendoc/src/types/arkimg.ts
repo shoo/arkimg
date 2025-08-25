@@ -13,6 +13,7 @@ export interface SecretItem {
 export interface ArkImgState {
 	baseImage: Ref<Uint8Array | null>;
 	baseImageFileName: Ref<string | null>;
+	baseImageMIME: Ref<string | null>;
 	secretItems: Ref<SecretItem[]>;
 	selectedItem: Ref<number | null>;
 	addItem: (item: SecretItem) => void;

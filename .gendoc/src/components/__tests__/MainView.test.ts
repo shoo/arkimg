@@ -113,6 +113,7 @@ describe('MainView', () => {
 			expect(vm.$.provides.arkImgState).toBeDefined();
 			expect(vm.$.provides.arkImgState.baseImage).toBeDefined();
 			expect(vm.$.provides.arkImgState.baseImageFileName).toBeDefined();
+			expect(vm.$.provides.arkImgState.baseImageMIME).toBeDefined();
 			expect(vm.$.provides.arkImgState.secretItems).toBeDefined();
 			expect(vm.$.provides.arkImgState.selectedItem).toBeDefined();
 			expect(typeof vm.$.provides.arkImgState.addItem).toBe('function');

@@ -70,6 +70,7 @@ describe('SettingsSection.vue', () => {
 		mockArkImgState = {
 			baseImage: ref(new Uint8Array([13, 14, 15])),
 			baseImageFileName: ref('test.png'),
+			baseImageMIME: ref('image/png'),
 			secretItems: ref([
 				{
 					data: new Uint8Array([16, 17, 18]),
