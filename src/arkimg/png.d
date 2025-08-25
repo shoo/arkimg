@@ -501,6 +501,27 @@ public:
 	assert(!img1.hasSign);
 	img1.sign(prvKey);
 	assert(img1.hasSign);
+	img1.addSecretItem(cast(immutable(ubyte)[])"TEST TEXT", "test.txt", "text/plain");
+	assert(!img1.hasSign);
+	assert(img1.hasSign(0));
+	assert(!img1.hasSign(1));
+	assert(img1.verify(0, pubKey));
+	img1.sign(1, prvKey);
+	assert(img1.hasSign(1));
+	assert(img1.hasSign);
+	assert(img1.verify(1, pubKey));
+	
+	auto prvKey2   = createPrivateKey();
+	auto pubKey2   = createPublicKey(prvKey2);
+	img1.addSecretItem(cast(immutable(ubyte)[])"TEST2 TEXT", "test2.txt", "text/plain", prvKey2);
+	assert(img1.hasSign(2));
+	assert(img1.hasSign);
+	assert(!img1.verify(pubKey));
+	assert(!img1.verify(pubKey2));
+	assert(img1.verify(0, pubKey));
+	assert(img1.verify(1, pubKey));
+	assert(!img1.verify(2, pubKey));
+	assert(img1.verify(2, pubKey2));
 	
 	std.file.write(testdir.buildPath("test-out.png"), img1.save());
 }

@@ -219,12 +219,13 @@ void list(string arkimgFile, string secretPattern, DetailModeInfo detail,
 		disp(detail.digest,
 			"Digest", img.getDecryptedItem(idx).sha256Of.toHexString().dup);
 		disp(detail.sign && itm.sign.length > 0,
-			"Signature", Base64URLNoPadding.encode(itm.sign));
-		disp(detail.sign && itm.modified !is SysTime.init,
+			"Signature", ((pubKey.length > 0 ? (img.verify(idx, pubKey) ? "\033[32m✔\033[0m " : "\033[31m✘\033[0m ") : "")
+				~ Base64URLNoPadding.encode(itm.sign)).idup);
+		disp(detail.modified && itm.modified !is SysTime.init,
 			"Modified", itm.modified.toISOExtString());
-		disp(detail.sign && itm.comment.length > 0,
+		disp(detail.comment && itm.comment.length > 0,
 			"Comment", itm.comment);
-		disp(detail.sign && itm.extra !is JSONValue.init,
+		disp(detail.extra && itm.extra !is JSONValue.init,
 			"Extra", itm.extra.toPrettyString(JSONOptions.doNotEscapeSlashes));
 	}
 }

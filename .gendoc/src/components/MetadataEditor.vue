@@ -111,8 +111,12 @@ const validationErrors = ref<{ filename?: string }>({});
 const hasChanges = ref(false);
 
 const signatureStatus = computed<'verified' | 'failed' | 'unverified'>(() => {
-  if (!selectedItem.value) return 'unverified'; // 初期状態
-  return 'unverified';
+  const selIdx = arkImgState.selectedItem?.value ?? undefined;
+  const selItm = selIdx !== undefined ? arkImgState.secretItems?.value[selIdx] : undefined;
+  if (selItm?.isSignVerified === undefined){
+     return 'unverified'; // 初期状態
+  }
+  return selItm.isSignVerified ? 'verified' : 'failed';
 });
 
 const signatureStatusClass = computed<string>(() => {

@@ -68,8 +68,11 @@ std.file.write("encrypted.png", img.save());
   - `immutable(ubyte)[] save() const`: 画像ファイルへのデータ保存
   - `void setKey(in ubyte[] commonKey)`: 暗号化/復号のための共通鍵を設定
   - `void sign(in ubyte[] prvKey)`: 全データにまとめて署名
+  - `void sign(size_t idx, in ubyte[] prvKey)`: 指定データに署名
   - `bool verify(in ubyte[] pubKey) const`: 全データの署名をまとめて検証
+  - `bool verify(size_t idx, in ubyte[] pubKey) const`: 指定データの署名を検証
   - `bool hasSign() const`: 署名を持っているか確認
+  - `bool hasSign(size_t idx) const`: 指定の添付データが署名を持っているか確認
   - `void metadata(in JSONValue metadata)`: メタデータを設定
   - `JSONValue metadata() const`: メタデータを取得
   - `void baseImage(in ubyte[] binary, string mimeType = "image/bmp")`: ベース画像設定

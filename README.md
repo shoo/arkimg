@@ -67,8 +67,11 @@ std.file.write("encrypted.png", img.save());
   - `immutable(ubyte)[] save() const`: Save data to image file
   - `void setKey(in ubyte[] commonKey)`: Set the common key for encryption/decryption
   - `void sign(in ubyte[] prvKey)`: Sign all data
+  - `void sign(size_t idx, in ubyte[] prvKey)`: Sign specified data
   - `bool verify(in ubyte[] pubKey) const`: Verify the signature of all data
+  - `bool verify(in ubyte[] pubKey) const`: Verify the signature of specified data
   - `bool hasSign() const`: Check if the image has a signature
+  - `bool hasSign(size_t idx) const`: Check if the specified item has a signature
   - `void metadata(in JSONValue metadata)`: Set metadata
   - `JSONValue metadata() const`: Get metadata
   - `void baseImage(in ubyte[] binary, string mimeType = "image/bmp")`: Set base image
