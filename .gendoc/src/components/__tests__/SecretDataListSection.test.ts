@@ -81,6 +81,11 @@ describe('SecretDataListSection.vue', () => {
 					name: 'image.png',
 					mime: 'image/png',
 					isSignVerified: false
+				}),
+				createMockSecretItem({
+					name: 'image.webp',
+					mime: 'image/webp',
+					isSignVerified: undefined
 				})
 			];
 			mockResponsiveContext.isMobile.value = false;
@@ -104,7 +109,16 @@ describe('SecretDataListSection.vue', () => {
 		
 		it('署名検証状態のアイコンが適切に表示される', () => {
 			const items = wrapper.findAll('.secret-item');
-			expect(items).toHaveLength(2);
+			expect(items).toHaveLength(3);
+			const icon1 = items[0].find("svg");
+			expect(mockArkImgState.secretItems.value[0].isSignVerified).toBe(true);
+			expect(icon1.classes("text-green-500")).toBe(true);
+			const icon2 = items[1].find("svg");
+			expect(mockArkImgState.secretItems.value[1].isSignVerified).toBe(false);
+			expect(icon2.classes("text-red-500")).toBe(true);
+			const icon3 = items[2].find("svg");
+			expect(mockArkImgState.secretItems.value[2].isSignVerified).toBeUndefined();
+			expect(icon3.classes("text-gray-400")).toBe(true);
 		});
 		
 		it('ファイルタイプに応じたアイコンが表示される', () => {

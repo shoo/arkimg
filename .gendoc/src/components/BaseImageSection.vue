@@ -106,6 +106,7 @@ const loadImage = (imageSource: Uint8Array | null) => {
           name: md?.name,
           mime: md?.mime,
           comment: md?.comment,
+          isSignVerified: md?.sign ? arkimg.isVerified(i) : undefined,
           modified: md?.modified ? new Date(md.modified) : undefined,
         });
       }

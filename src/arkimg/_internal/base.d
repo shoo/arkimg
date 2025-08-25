@@ -153,6 +153,26 @@ public:
 			reqo(*items, idx).req!string("sign").str = Base64URLNoPadding.encode(signEd25519(dat, prvKey));
 	}
 	/// ditto
+	override void sign(size_t idx, in ubyte[] prvKey) @safe
+	in (_commonKey !is null)
+	{
+		import std.base64, std.range;
+		import arkimg._internal.misc;
+		// 暗号データに署名するので、すべてのデータを暗号化
+		_encryptAllItems();
+		
+		auto md = metadata();
+		scope (success)
+			metadata = md;
+		if (md.type != JSONType.object)
+			md = JSONValue.emptyObject;
+		
+		auto items = &(md.reqa("items"));
+		enforce(idx < _getEncryptedItems.length, "Index out of bounds.");
+		auto dat = _getEncryptedItems[idx];
+		reqo(*items, idx).req!string("sign").str = Base64URLNoPadding.encode(signEd25519(dat, prvKey));
+	}
+	/// ditto
 	override bool verify(in ubyte[] pubKey) const @safe
 	{
 		import std.base64, std.range;
@@ -178,6 +198,31 @@ public:
 		return true;
 	}
 	/// ditto
+	override bool verify(size_t idx, in ubyte[] pubKey) const @safe
+	{
+		import std.base64, std.range;
+		auto md = metadata;
+		if (md.type != JSONType.object)
+			return false;
+		auto items = "items" in md;
+		if (items is null)
+			return false;
+		if (idx >= _getEncryptedItems.length)
+			return false;
+		auto dat = _getEncryptedItems[idx];
+		if (items.type != JSONType.array || idx >= (() @trusted => items.array)().length)
+			return false;
+		auto signJv = "sign" in (() @trusted => items.array)()[idx];
+		if (signJv is null || signJv.type != JSONType.string || signJv.str.length == 0)
+			return false;
+		auto signBin = Base64URLNoPadding.decode(signJv.str);
+		if (signBin.length == 0)
+			return false;
+		if (!verifyEd25519(signBin, dat, pubKey))
+			return false;
+		return true;
+	}
+	/// ditto
 	override bool hasSign() const @safe
 	{
 		import std.algorithm;
@@ -190,6 +235,22 @@ public:
 		if (items.type != JSONType.array || (() @trusted => items.array)().length != _secretItems.length)
 			return false;
 		return (() @trusted => items.array)().all!(item => "sign" in item);
+	}
+	/// ditto
+	override bool hasSign(size_t idx) const @safe
+	{
+		import std.algorithm;
+		auto md = metadata;
+		if (md.type != JSONType.object)
+			return false;
+		auto items = "items" in md;
+		if (items is null)
+			return false;
+		if (items.type != JSONType.array
+			|| (() @trusted => items.array)().length != _secretItems.length
+			|| idx >= _secretItems.length)
+			return false;
+		return cast(bool)("sign" in (() @trusted => items.array)()[idx]);
 	}
 	/// ditto
 	override void metadata(in JSONValue metadata) @trusted

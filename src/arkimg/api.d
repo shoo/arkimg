@@ -44,18 +44,24 @@ interface ArkImg
 	 * - メタデータの `items[*].sign` をすべての添付データに対して作成する
 	 */
 	void sign(in ubyte[] prvKey);
+	/// ditto
+	void sign(size_t idx, in ubyte[] prvKey);
 	/***************************************************************************
 	 * 全データの署名をまとめて検証 / Verifying for all secret data
 	 * 
 	 * - メタデータの `items[*].sign` が存在して、その署名が prvKey の公開鍵で検証できるかどうかを確認する
 	 */
 	bool verify(in ubyte[] pubKey) const;
+	/// ditto
+	bool verify(size_t idx, in ubyte[] pubKey) const;
 	/***************************************************************************
 	 * 署名を持っているか確認 / Check existing signature
 	 * 
 	 * - メタデータの `items[*].sign` が存在するかどうかを確認する
 	 */
 	bool hasSign() const;
+	/// ditto
+	bool hasSign(size_t idx) const;
 	/***************************************************************************
 	 * メタデータを設定/取得 / Set/Get metadata
 	 */

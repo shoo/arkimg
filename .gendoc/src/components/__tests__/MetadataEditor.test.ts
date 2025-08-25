@@ -17,7 +17,8 @@ describe('MetadataEditor.vue', () => {
 					comment: 'テストコメント',
 					modified: new Date('2025-01-01T10:00:00Z'),
 					mime: 'image/jpeg',
-					data: new Uint8Array([1, 2, 3, 4, 5])
+					data: new Uint8Array([1, 2, 3, 4, 5]),
+					isSignVerified: undefined
 				}
 			]),
 			updateItem: vi.fn()
@@ -51,25 +52,41 @@ describe('MetadataEditor.vue', () => {
 		beforeEach(() => {
 			mockArkImgState.selectedItem.value = 0;
 		});
-
+		
 		it('ファイル情報を正しく表示する', () => {
 			expect((wrapper.find('#filename').element as HTMLInputElement).value).toBe('test.jpg');
 			expect((wrapper.find('#comment').element as HTMLTextAreaElement).value).toBe('テストコメント');
 		});
-
+		
 		it('ファイルサイズを正しくフォーマットして表示する', () => {
 			const sizeElement = wrapper.findAll('span').find((span: DOMWrapper<Node>) => span.text().includes('B'));
 			expect(sizeElement?.text()).toBe('5 B');
 		});
-
+		
 		it('編集ボタンが表示される', () => {
 			const editButton = wrapper.find('button');
 			expect(editButton.text()).toBe('編集');
 		});
-
+		
 		it('署名検証ステータスが未検証として表示される', () => {
 			const statusElement = wrapper.find('.text-gray-500 span');
 			expect(statusElement.text()).toBe('未検証');
+		});
+		
+		it('署名検証ステータスが検証済みとして表示される', async () => {
+			mockArkImgState.secretItems.value[0].isSignVerified = true;
+			await wrapper.vm.$nextTick();
+			
+			const statusElement = wrapper.find('.text-green-600 span');
+			expect(statusElement.text()).toBe('検証済み');
+		});
+		
+		it('署名検証ステータスが検証失敗として表示される', async () => {
+			mockArkImgState.secretItems.value[0].isSignVerified = false;
+			await wrapper.vm.$nextTick();
+			
+			const statusElement = wrapper.find('.text-red-600 span');
+			expect(statusElement.text()).toBe('検証失敗');
 		});
 	});
 
