@@ -76,7 +76,7 @@ const downloadArkImg = async () => {
         prvkey: cryptoContext.prvkey?.value || undefined
       });
     }
-    const arkimgMimeType = getMimeTypeFromExtension(arkImgState.baseImageFileName.value!);
+    const arkimgMimeType = arkImgState.baseImageMIME.value ?? getMimeTypeFromExtension(arkImgState.baseImageFileName.value!);
     const arkimgBinary = await createArkImg(
       arkImgState.baseImage.value!, arkimgMimeType, secrets,
       cryptoContext.key.value!, cryptoContext.iv?.value || undefined, cryptoContext.prvkey?.value || undefined

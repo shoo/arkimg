@@ -43,6 +43,7 @@ describe('BaseImageSection.vue', () => {
 		arkImgState = {
 			baseImage: ref(null),
 			baseImageFileName: ref(null),
+			baseImageMIME: ref(null),
 			secretItems: ref([]),
 			selectedItem: ref(null),
 			addItem: (item: SecretItem) => {item},
@@ -325,6 +326,7 @@ describe('BaseImageSection.vue', () => {
 		it('ベース画像がある場合、画像を表示する', async () => {
 			arkImgState.baseImage.value = new Uint8Array([1, 2, 3, 4]);
 			arkImgState.baseImageFileName.value = 'test.jpg';
+			arkImgState.baseImageMIME.value = 'image/jpeg';
 			
 			const wrapper = createWrapper();
 			
@@ -362,6 +364,7 @@ describe('BaseImageSection.vue', () => {
 			// 画像を設定してマウント
 			arkImgState.baseImage.value = new Uint8Array([1, 2, 3, 4]);
 			arkImgState.baseImageFileName.value = 'test.jpg';
+			arkImgState.baseImageMIME.value = 'image/jpeg';
 			const wrapper = createWrapper();
 			
 			(wrapper.vm as any).imageUrl = 'blob:mock-url'; // 画像URLを直接設定
@@ -377,6 +380,7 @@ describe('BaseImageSection.vue', () => {
 			
 			expect(arkImgState.baseImage.value).toBeNull();
 			expect(arkImgState.baseImageFileName.value).toBeNull();
+			expect(arkImgState.baseImageMIME.value).toBeNull();
 		});
 	});
 

@@ -89,7 +89,7 @@ const loadImage = (imageSource: Uint8Array | null) => {
   }
   isLoading.value = true;
   const baseImageFileName = arkImgState.baseImageFileName.value!;
-  const baseImageMIME = getMimeTypeFromExtension(baseImageFileName);
+  const baseImageMIME = arkImgState.baseImageMIME.value ?? getMimeTypeFromExtension(baseImageFileName);
   if (arkImgState.secretItems.value) {
     arkImgState.secretItems.value.length = 0;
   }
@@ -139,6 +139,7 @@ const handleDrop = (event: DragEvent) => {
       if (e.target?.result) {
         arkImgState.baseImage.value = new Uint8Array(e.target.result as ArrayBuffer);
         arkImgState.baseImageFileName.value = file.name;
+        arkImgState.baseImageMIME.value = file.type;
         notificationManager.notify('ファイルの読み込みに成功しました', 'success');
       }
     };
@@ -162,6 +163,7 @@ const handleFileSelect = (event: Event) => {
       if (e.target?.result) {
         arkImgState.baseImage.value = new Uint8Array(e.target.result as ArrayBuffer);
         arkImgState.baseImageFileName.value = file.name;
+        arkImgState.baseImageMIME.value = file.type;
         notificationManager.notify('ファイルの読み込みに成功しました', 'success');
       }
     };
@@ -202,6 +204,7 @@ const downloadImage = async () => {
       if (e.target?.result) {
         arkImgState.baseImage.value = new Uint8Array(e.target.result as ArrayBuffer);
         arkImgState.baseImageFileName.value = urlToDownload.split('/').pop() || 'downloaded_image';
+        arkImgState.baseImageMIME.value = blob.type;
         notificationManager.notify('画像をダウンロードしました', 'success');
       }
     };
@@ -224,6 +227,7 @@ const unloadBaseImage = () => {
   if (arkImgState.baseImage?.value || arkImgState.baseImageFileName?.value) {
     arkImgState.baseImage.value = null;
     arkImgState.baseImageFileName.value = null;
+    arkImgState.baseImageMIME.value = null;
     notificationManager.notify('ベース画像をアンロードしました', 'success')
   }
 };

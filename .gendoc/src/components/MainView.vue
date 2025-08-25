@@ -80,6 +80,7 @@ provide('cryptoContext', cryptoContext);
 // --- ArkImg State ---
 const baseImage: Ref<Uint8Array | null> = ref(null);
 const baseImageFileName: Ref<string | null> = ref(null);
+const baseImageMIME: Ref<string | null> = ref(null);
 const secretItems: Ref<SecretItem[]> = ref([]);
 const selectedItem: Ref<number | null> = ref(null);
 
@@ -107,6 +108,7 @@ const removeItem = (index: number) => {
 const arkImgState: ArkImgState = {
   baseImage,
   baseImageFileName,
+  baseImageMIME,
   secretItems,
   selectedItem,
   addItem,

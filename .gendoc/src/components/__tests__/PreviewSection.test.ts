@@ -40,6 +40,7 @@ describe('PreviewSection.vue', () => {
 		mockArkImgState = {
 			baseImage: ref(new Uint8Array([1,2,3,4])),
 			baseImageFileName: ref('test.png'),
+			baseImageMIME: ref('image/png'),
 			selectedItem: ref(0),
 			secretItems: ref([mockSecretItem]),
 			addItem: (item: SecretItem) => {item},
@@ -81,6 +82,7 @@ describe('PreviewSection.vue', () => {
 		const emptyArkImgState = {
 			baseImage: ref(null),
 			baseImageFileName: ref(null),
+			baseImageMIME: ref(null),
 			selectedItem: ref(null),
 			secretItems: ref([]),
 			addItem: (item: SecretItem) => {item},
