@@ -1,5 +1,5 @@
 <template>
-  <div :class="{'flex flex-col min-h-max w-max mx-auto': isMobile, 'flex flex-row h-svh w-svw py-10 justify-center': !isMobile}">
+  <div :class="{'flex flex-col min-h-max w-max max-w-full mx-auto': isMobile, 'flex flex-row h-svh w-svw py-10 justify-center': !isMobile}">
     <!-- PC-Left/Mobile-Top: BaseImageSection (and CryptoKeyInput for PC) -->
     <BaseImageSection
       :class="{
