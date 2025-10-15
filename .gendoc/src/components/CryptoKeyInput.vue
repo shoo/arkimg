@@ -1,20 +1,20 @@
 <template>
   <div class="my-4 flex flex-row items-center">
     <label for="common-key" class="mr-1 flex-shrink-0 w-16 block text-gray-700 text-sm font-bold text-right">暗号鍵:</label>
-    <input type="text" id="common-key" v-model="aesKeyInput" @input="updateAesKey" placeholder="暗号鍵" class="shadow appearance-none border rounded flex-1 py-1 px-2 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" />
+    <input type="text" id="common-key" v-model="aesKeyInput" @input="updateAesKey" placeholder="暗号鍵" class="shadow appearance-none border rounded flex-1 py-1 px-2 min-w-0 overflow-hidden text-gray-700 leading-tight focus:outline-none focus:shadow-outline" />
     <button @click="generateAesKey" class="ml-2 flex-shrink-0 w-24 bg-blue-500 hover:bg-blue-700 text-white font-bold py-1 px-2 rounded focus:outline-none focus:shadow-outline" type="button">生成</button>
     <p v-if="validationErrors.aesKey" class="text-red-500 text-xs italic">{{ validationErrors.aesKey }}</p>
   </div>
 
   <div class="mb-4 flex flex-row items-center">
     <label for="private-key" class="mr-1 flex-none w-16 block text-gray-700 text-sm font-bold text-right">秘密鍵:</label>
-    <input type="text" id="private-key" v-model="privateKeyInput" @input="updatePrivateKey" placeholder="署名用 秘密鍵" class="shadow appearance-none border rounded flex-1 py-1 px-2 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" />
+    <input type="text" id="private-key" v-model="privateKeyInput" @input="updatePrivateKey" placeholder="署名用 秘密鍵" class="shadow appearance-none border rounded flex-1 py-1 px-2 min-w-0 overflow-hidden text-gray-700 leading-tight focus:outline-none focus:shadow-outline" />
     <p v-if="validationErrors.privateKey" class="text-red-500 text-xs italic">{{ validationErrors.privateKey }}</p>
   </div>
 
   <div class="mb-4 flex flex-row items-center">
     <label for="public-key" class="mr-1 flex-none w-16 block text-gray-700 text-sm font-bold text-right">公開鍵:</label>
-    <input type="text" id="public-key" v-model="publicKeyInput" @input="updatePublicKey" placeholder="署名検証用 公開鍵" class="shadow appearance-none border rounded flex-1 py-1 px-2 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" />
+    <input type="text" id="public-key" v-model="publicKeyInput" @input="updatePublicKey" placeholder="署名検証用 公開鍵" class="shadow appearance-none border rounded flex-1 py-1 px-2 min-w-0 overflow-hidden text-gray-700 leading-tight focus:outline-none focus:shadow-outline" />
     <p v-if="validationErrors.publicKey" class="text-red-500 text-xs italic">{{ validationErrors.publicKey }}</p>
   </div>
 </template>
